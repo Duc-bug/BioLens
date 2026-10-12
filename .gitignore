@@ -1,0 +1,36 @@
+# Python byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.local
+
+# macOS / Windows OS metadata
+__MACOSX/
+._*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large dataset raw folders & heavy binary embeddings (keep JSON reports & docs)
+storage/embeddings/*.npy
+storage/embeddings/rel_paths.json
+storage/checkpoints/*.pt
+storage/checkpoints/*.npz
+storage/catalog/species_knowledge.json
+storage/catalog/species_catalog.json
+storage/catalog/dataset_splits.json
+
+# IDE settings
+.vscode/
+.idea/
