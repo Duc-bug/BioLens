@@ -1,0 +1,10 @@
+{
+  "backbone": "MobileNetV3-Large (IMAGENET1K_V2)",
+  "device": "CUDA GPU Acceleration (FP16)",
+  "featureDim": 960,
+  "numTotalManifest": 310647,
+  "numValidSamples": 310647,
+  "numCorruptedSkipped": 0,
+  "extractionTimeSeconds": 1662.83,
+  "throughputImagesPerSec": 186.82
+}
