@@ -1,0 +1,68 @@
+[
+  {
+    "id": "chart_01_top_families.png",
+    "title": "Biểu đồ 1: Top 15 Họ Thực vật Lớn nhất",
+    "caption": "Phân bố số lượng loài của 15 họ thực vật chiếm tỉ trọng lớn nhất trong 355 họ của bộ dữ liệu.",
+    "url": "/api/chart/chart_01_top_families.png"
+  },
+  {
+    "id": "chart_02_long_tail_dist.png",
+    "title": "Biểu đồ 2: Phân phối Long-Tailed 3,570 Loài",
+    "caption": "Sự chênh lệch số lượng mẫu từ 130 ảnh/loài (nhóm phổ biến) xuống 1–5 ảnh/loài (nhóm quý hiếm).",
+    "url": "/api/chart/chart_02_long_tail_dist.png"
+  },
+  {
+    "id": "chart_03_training_curves.png",
+    "title": "Biểu đồ 3: Đường cong Hội tụ Huấn luyện (Loss, Accuracy & Best Checkpoint)",
+    "caption": "Diễn biến giảm hàm mất mát qua nhiều Epochs kết hợp lớp ngắt Dropout 2 tầng và điểm lưu Best Checkpoint chống Overfitting.",
+    "url": "/api/chart/chart_03_training_curves.png"
+  },
+  {
+    "id": "chart_04_multiscale_accuracy.png",
+    "title": "Biểu đồ 4: Đánh giá Đa quy mô (Top-50 / Top-100 / Top-500 / 3,570 Loài)",
+    "caption": "Trên tập chuẩn 50–100 loài phổ biến, mô hình đạt độ chính xác rất cao (80%–96%), đồng thời mở rộng ra toàn bộ 3,570 loài.",
+    "url": "/api/chart/chart_04_multiscale_accuracy.png"
+  },
+  {
+    "id": "chart_05_ml_algorithms_full.png",
+    "title": "Biểu đồ 5: Đối sánh 4 Thuật toán Học máy & Ensemble (Fine-tuned v2)",
+    "caption": "So sánh trực tiếp Subcenter Prototype, Hard-Margin SVM, Balanced k-NN, SE-Cosine MLP và BioLens Ensemble.",
+    "url": "/api/chart/chart_05_ml_algorithms_full.png"
+  },
+  {
+    "id": "chart_06_hierarchical_taxonomy.png",
+    "title": "Biểu đồ 6: Độ chính xác theo Bậc Phân loại Học (Loài → Chi → Họ → Giới)",
+    "caption": "Ngay cả khi hai loài cùng chi/họ có hoa rất giống nhau, mô hình vẫn định danh đúng Chi và Họ thực vật với độ chính xác rất cao.",
+    "url": "/api/chart/chart_06_hierarchical_taxonomy.png"
+  },
+  {
+    "id": "chart_07_shot_groups.png",
+    "title": "Biểu đồ 7: Độ chính xác theo Nhóm Mật độ Ảnh (Many / Medium / Few-shot)",
+    "caption": "Ảnh hưởng của số lượng ảnh huấn luyện mỗi loài đến khả năng nhận diện trên tập Test.",
+    "url": "/api/chart/chart_07_shot_groups.png"
+  },
+  {
+    "id": "chart_08_confusion_matrix.png",
+    "title": "Biểu đồ 8: Ma trận Nhầm lẫn (Confusion Matrix 12 Loài Tiêu biểu)",
+    "caption": "Đường chéo chính đậm nét thể hiện độ chính xác cao và khả năng phân tách rõ giữa các loài dược liệu.",
+    "url": "/api/chart/chart_08_confusion_matrix.png"
+  },
+  {
+    "id": "chart_09_ood_roc_and_hist.png",
+    "title": "Biểu đồ 9: Phân phối Cosine & Đường cong ROC Bộ lọc OOD",
+    "caption": "Sự phân tách rõ rệt giữa ảnh thực vật hợp lệ và ảnh vật thể ngoại lai với diện tích dưới đường cong AUC > 0.999.",
+    "url": "/api/chart/chart_09_ood_roc_and_hist.png"
+  },
+  {
+    "id": "chart_10_latency_tradeoff.png",
+    "title": "Biểu đồ 10: Thời gian Huấn luyện & Độ trễ Suy luận trên GPU CUDA",
+    "caption": "Tất cả các thuật toán đều đạt tốc độ suy luận thời gian thực (< 0.18 ms/ảnh sau khi trích xuất đặc trưng).",
+    "url": "/api/chart/chart_10_latency_tradeoff.png"
+  },
+  {
+    "id": "chart_11_ablation_v1_vs_v2.png",
+    "title": "Biểu đồ 11: Đối sánh Ablation Study (Phần 1 Baseline vs Phần 2 Fine-tuned)",
+    "caption": "Sự gia tăng độ chính xác Top-1 và Top-5 của toàn bộ 4 thuật toán Học máy và Hybrid Ensemble sau khi Fine-tune không gian đặc trưng thực vật học.",
+    "url": "/api/chart/chart_11_ablation_v1_vs_v2.png"
+  }
+]
