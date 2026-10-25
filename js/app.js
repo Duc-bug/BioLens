@@ -6,8 +6,9 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Địa chỉ Backend AI từ xa (ví dụ Hugging Face Space URL hoặc Cloudflare Tunnel URL khi chạy từ GitHub Pages)
-    const REMOTE_API_BASE = (window.BIOLENS_API_BASE || localStorage.getItem("BIOLENS_API_BASE") || "").replace(/\/+$/, "");
+    // Địa chỉ Backend AI từ xa (Mặc định kết nối tới Hugging Face Space https://isado-biolens.hf.space khi mở từ GitHub Pages)
+    const DEFAULT_HF_SPACE = window.location.hostname.endsWith("github.io") ? "https://isado-biolens.hf.space" : "";
+    const REMOTE_API_BASE = (window.BIOLENS_API_BASE || localStorage.getItem("BIOLENS_API_BASE") || DEFAULT_HF_SPACE).replace(/\/+$/, "");
     const apiUrl = (path) => (REMOTE_API_BASE ? `${REMOTE_API_BASE}${path}` : path);
 
     // Trạng thái toàn cục
