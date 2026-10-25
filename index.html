@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BioLens — Hệ thống Nhận diện Thực vật Việt Nam</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+    <!-- Thanh điều hướng chính (Header tối giản, sáng sủa) -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand-group" id="brandHomeBtn">
+                <div class="brand-logo" aria-hidden="true">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-title-row">
+                        <h1 class="brand-title">BioLens</h1>
+                    </div>
+                    <p class="brand-subtitle">Hệ thống Nhận diện Thực vật Việt Nam</p>
+                </div>
+            </div>
+
+            <nav class="main-nav" aria-label="Điều hướng chính">
+                <button class="nav-tab active" data-tab="identify">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>Nhận diện Ảnh</span>
+                </button>
+                <button class="nav-tab" data-tab="explorer">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                    </svg>
+                    <span>Bách khoa (3,570 loài)</span>
+                </button>
+                <button class="nav-tab" data-tab="benchmarks">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    <span>Thực nghiệm Học máy</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <!-- ===================================================================== -->
+        <!-- TAB 1: NHẬN DIỆN ẢNH / CAMERA & HỒ SƠ THỰC VẬT - DƯỢC LIỆU            -->
+        <!-- ===================================================================== -->
+        <section id="tab-identify" class="tab-panel active">
+            <div class="identify-grid">
+                <!-- Cột trái: Tải ảnh & Tùy chọn -->
+                <aside class="identify-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Ảnh phân tích</h2>
+                        </div>
+
+                        <!-- Vùng kéo thả hoặc xem trước ảnh -->
+                        <div id="dropZone" class="upload-dropzone" tabindex="0">
+                            <input type="file" id="fileInput" accept="image/*" hidden />
+                            <div id="uploadPrompt" class="upload-prompt">
+                                <div class="upload-icon-circle">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                </div>
+                                <p class="upload-main-text">Kéo thả ảnh hoa/cây vào đây hoặc <span>chọn file ảnh</span></p>
+                                <p class="upload-sub-text">Hỗ trợ JPG, PNG, WEBP • Tự động lọc ảnh mờ hoặc vật thể lạ</p>
+                            </div>
+
+                            <!-- Khung hiển thị ảnh đã chọn -->
+                            <div id="previewContainer" class="preview-container hidden">
+                                <img id="previewImage" src="" alt="Ảnh mẫu cần nhận diện" />
+                                <button type="button" id="clearImageBtn" class="preview-clear-btn" title="Xóa ảnh này">✕ Đổi ảnh khác</button>
+                            </div>
+
+                            <!-- Khung Camera trực tiếp WebRTC -->
+                            <div id="cameraContainer" class="camera-container hidden">
+                                <video id="cameraVideo" autoplay playsinline muted></video>
+                                <canvas id="cameraCanvas" hidden></canvas>
+                                <div class="camera-overlay-frame"></div>
+                                <div class="camera-controls-bar">
+                                    <button type="button" id="switchCameraBtn" class="btn btn-light-sm">Đổi ống kính</button>
+                                    <button type="button" id="capturePhotoBtn" class="btn btn-primary-sm">Chụp ảnh</button>
+                                    <button type="button" id="closeCameraBtn" class="btn btn-light-sm">Đóng</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-actions-row">
+                            <button type="button" id="browseFileBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span>Tải ảnh từ máy</span>
+                            </button>
+                            <button type="button" id="openCameraBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                <span>Mở Camera chụp</span>
+                            </button>
+                        </div>
+
+                        <!-- Chọn bộ phận thực vật quan sát -->
+                        <div class="form-group">
+                            <label class="form-label">Bộ phận:</label>
+                            <div class="organ-pills" id="organSelector">
+                                <button type="button" class="organ-pill active" data-organ="auto">Tự động</button>
+                                <button type="button" class="organ-pill" data-organ="flower">✿ Hoa</button>
+                                <button type="button" class="organ-pill" data-organ="leaf">🌿 Lá</button>
+                                <button type="button" class="organ-pill" data-organ="fruit">🍒 Quả / Hạt</button>
+                                <button type="button" class="organ-pill" data-organ="whole">🌳 Toàn cây / Nấm</button>
+                            </div>
+                        </div>
+
+                        <!-- Tự động dùng mô hình mạnh nhất BioLens Hybrid Ensemble (đã ẩn khỏi UI) -->
+                        <input type="hidden" id="algorithmSelect" value="ensemble" />
+
+                        <button type="button" id="runIdentifyBtn" class="btn btn-primary btn-block" disabled>
+                            <span>Phân tích &amp; Nhận diện</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Cột phải: Kết quả nhận diện & Hồ sơ chi tiết loài hoa/cây -->
+                <div class="identify-results-area">
+                    <!-- Trạng thái chờ ban đầu -->
+                    <div id="emptyResultState" class="card empty-state-card">
+                        <div class="empty-state-inner">
+                            <div class="empty-botanical-illustration">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+                                    <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22"/>
+                                    <path d="M8 6a4 4 0 0 1 8 0"/>
+                                    <path d="M12 14c-4.5 0-8-2.5-8-6 4.5 0 8 2.5 8 6Z"/>
+                                    <path d="M12 18c4.5 0 8-2.5 8-6-4.5 0-8 2.5-8 6Z"/>
+                                </svg>
+                            </div>
+                            <h3>Nhận diện &amp; Tra cứu Thực vật, Cây thuốc Việt Nam</h3>
+                            <p>
+                                Tải lên ảnh chụp hoa, lá, cây thuốc hoặc mở Camera để định danh trong <strong>3,570 loài</strong> và xem hồ sơ đặc điểm nhận biết, công dụng dược liệu.
+                            </p>
+                            <div class="feature-steps-grid">
+                                <div class="step-box">
+                                    <span class="step-num">Bước 1</span>
+                                    <strong>Kiểm duyệt ảnh tự động</strong>
+                                    <p>Tự động phát hiện và từ chối nếu ảnh chụp đồ vật, con người, động vật hoặc bị mờ tối.</p>
+                                </div>
+                                <div class="step-box">
+                                    <span class="step-num">Bước 2</span>
+                                    <strong>Định danh 3,570 loài</strong>
+                                    <p>Đối chiếu hình thái nhanh chóng và gợi ý danh sách các loài thực vật gần giống nhất.</p>
+                                </div>
+                                <div class="step-box">
+                                    <span class="step-num">Bước 3</span>
+                                    <strong>Hồ sơ Hoa &amp; Dược tính</strong>
+                                    <p>Cung cấp tên tiếng Việt, tên khoa học, đặc điểm hoa/lá, công dụng và lưu ý an toàn.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái đang xử lý -->
+                    <div id="loadingResultState" class="card loading-state-card hidden">
+                        <div class="spinner-ring"></div>
+                        <p class="loading-title">Đang phân tích hình thái thực vật...</p>
+                        <p class="loading-sub">Đối chiếu dữ liệu trong 3,570 loài thực vật &amp; dược liệu Việt Nam</p>
+                    </div>
+
+                    <!-- Khung Kết quả Chi tiết (Hiển thị sau khi nhận diện) -->
+                    <div id="activeResultContainer" class="results-stack hidden">
+                        <!-- 1. Thẻ trạng thái Kết quả & Cảnh báo lỗi (Đã gộp gọn thành 1 khung duy nhất) -->
+                        <div id="oodBannerCard" class="card ood-banner-card">
+                            <div class="ood-banner-header">
+                                <div class="ood-status-badge" id="oodStatusBadge">Đã nhận diện loài thực vật</div>
+                            </div>
+                            <p class="ood-banner-message" id="oodBannerMessage"></p>
+
+                            <!-- Hộp mẹo chụp ảnh (chỉ hiện khi ảnh bị từ chối) -->
+                            <div id="rejectedTipsBox" class="rejected-tips hidden">
+                                <strong>Mẹo chụp ảnh để nhận diện chính xác hơn:</strong>
+                                <ul>
+                                    <li>Đưa camera lại gần hoa, lá hoặc thân cây (cách 15–40 cm) và lấy nét rõ vào chủ thể.</li>
+                                    <li>Đặt thực vật ở giữa khung hình, tránh chụp lẫn con người, vật nuôi hoặc đồ vật xung quanh.</li>
+                                    <li>Chụp ở nơi đủ ánh sáng tự nhiên, giữ chắc tay để ảnh không bị mờ nhòe.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Nút thu gọn Xem thông số kỹ thuật ở dưới cùng của thẻ -->
+                            <details class="tech-details-accordion" id="techDetailsAccordion">
+                                <summary>▼ Xem thông số kỹ thuật</summary>
+                                <div class="ood-metrics-strip" id="oodMetricsStrip"></div>
+                            </details>
+                        </div>
+
+                        <!-- 2. Khi nhận diện thành công: HỒ SƠ CHI TIẾT LOÀI HOA / CÂY DƯỢC LIỆU -->
+                        <div id="acceptedProfileContainer" class="results-stack hidden">
+                            <!-- Thẻ Định danh Chính & Đối chiếu Ảnh mẫu -->
+                            <article class="card species-hero-card">
+                                <div class="species-hero-top">
+                                    <div class="species-title-block">
+                                        <div class="species-rank-row">
+                                            <span class="match-pill" id="topMatchScorePill">Độ khớp: 96.4%</span>
+                                            <span class="taxon-key-badge" id="topSpeciesKeyBadge">gbif:3940600</span>
+                                            <span class="kingdom-badge" id="topKingdomBadge">Giới Thực vật</span>
+                                        </div>
+                                        <h2 class="species-vn-title" id="topVietnameseName">Sâm bố chính</h2>
+                                        <p class="species-aliases" id="topVietnameseAliases"></p>
+                                        <p class="species-latin-name">
+                                            <em id="topCanonicalName">Abelmoschus sagittifolius</em>
+                                            <span id="topAuthorshipText"></span>
+                                        </p>
+                                    </div>
+                                    <div class="external-links-group" id="topExternalLinks"></div>
+                                </div>
+
+                                <!-- Chuỗi phân loại học 6 cấp -->
+                                <div class="taxonomy-chain" id="topTaxonomyChain"></div>
+
+                                <!-- Đối chiếu trực quan: Ảnh mẫu chuẩn trong Dataset -->
+                                <div class="specimen-comparison-section">
+                                    <div class="section-subhead">
+                                        <h4>Ảnh mẫu thực tế đối chiếu</h4>
+                                        <span id="topTotalDatasetImagesNote">87 ảnh mẫu</span>
+                                    </div>
+                                    <div class="specimen-gallery-row" id="topSampleGallery"></div>
+                                </div>
+                            </article>
+
+                            <!-- HỒ SƠ BÁCH KHOA VỀ LOÀI HOA / CÂY THUỐC -->
+                            <section class="card encyclopedia-profile-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Hồ sơ Thực vật &amp; Dược liệu</h3>
+                                </div>
+
+                                <div class="monograph-grid">
+                                    <div class="monograph-item monograph-full">
+                                        <div class="monograph-label">1. Giới thiệu tổng quan</div>
+                                        <p class="monograph-text" id="infoOverview"></p>
+                                    </div>
+
+                                    <div class="monograph-item">
+                                        <div class="monograph-label">2. Đặc điểm Hoa &amp; Cụm hoa</div>
+                                        <p class="monograph-text" id="infoFlower"></p>
+                                    </div>
+
+                                    <div class="monograph-item">
+                                        <div class="monograph-label">3. Đặc điểm Lá, Thân &amp; Quả/Rễ</div>
+                                        <p class="monograph-text" id="infoLeafStem"></p>
+                                    </div>
+
+                                    <div class="monograph-item">
+                                        <div class="monograph-label">4. Phân bố &amp; Sinh thái tại Việt Nam</div>
+                                        <p class="monograph-text" id="infoHabitat"></p>
+                                    </div>
+
+                                    <div class="monograph-item">
+                                        <div class="monograph-label">5. Bộ phận dùng &amp; Công dụng Dược liệu</div>
+                                        <p class="monograph-part-badge" id="infoPartsUsed"></p>
+                                        <p class="monograph-text" id="infoMedicinalUses"></p>
+                                    </div>
+
+                                    <div class="monograph-item monograph-full" style="background:#F7FAF8;border-color:#C8E6C9;">
+                                        <div class="monograph-label" style="color:#1B5E20;">6. Hoạt chất Sinh học &amp; Tính vị Đông y</div>
+                                        <p class="monograph-text" id="infoActiveCompounds" style="margin-bottom:6px;"></p>
+                                        <p class="monograph-text" id="infoTraditionalProps"></p>
+                                    </div>
+
+                                    <div class="monograph-item monograph-warning-box monograph-full">
+                                        <div class="monograph-label">7. Lưu ý An toàn &amp; Độc tính</div>
+                                        <p class="monograph-text" id="infoSafetyWarning"></p>
+                                        <div id="infoDataSourcesStrip" class="ood-metrics-strip" style="margin-top:10px;"></div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 2: TRA CỨU BÁCH KHOA 3,570 LOÀI                                   -->
+        <!-- ===================================================================== -->
+        <section id="tab-explorer" class="tab-panel">
+            <div class="card explorer-filter-bar">
+                <div class="explorer-search-group">
+                    <input
+                        type="text"
+                        id="speciesSearchInput"
+                        class="form-input"
+                        placeholder="Tìm theo tên tiếng Việt hoặc tên khoa học..."
+                    />
+                    <select id="familyFilterSelect" class="form-select">
+                        <option value="">Tất cả Họ (355)</option>
+                    </select>
+                    <select id="kingdomFilterSelect" class="form-select">
+                        <option value="">Tất cả Giới (4)</option>
+                        <option value="Plantae">Giới Thực vật (Plantae)</option>
+                        <option value="Fungi">Giới Nấm (Fungi)</option>
+                        <option value="Chromista">Giới Chromista</option>
+                        <option value="Bacteria">Giới Bacteria</option>
+                    </select>
+                    <button type="button" id="searchSpeciesBtn" class="btn btn-primary">Tìm kiếm</button>
+                </div>
+                <div class="explorer-meta-row">
+                    <span id="explorerCountText">Đang hiển thị 3,570 loài</span>
+                    <div class="pagination-controls">
+                        <button type="button" id="prevPageBtn" class="btn btn-light-sm">← Trang trước</button>
+                        <span id="pageIndicatorText">Trang 1 / 149</span>
+                        <button type="button" id="nextPageBtn" class="btn btn-light-sm">Trang sau →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="speciesGridContainer" class="species-cards-grid"></div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 3: BẢNG ĐÁNH GIÁ THỰC NGHIỆM HỌC MÁY & BÁO CÁO ĐỒ ÁN              -->
+        <!-- ===================================================================== -->
+        <section id="tab-benchmarks" class="tab-panel">
+            <div class="benchmark-header-card card">
+                <div class="benchmark-header-flex">
+                    <div>
+                        <h2>Kết quả Thực nghiệm &amp; Đối sánh Mô hình</h2>
+                        <p>
+                            Tổng hợp kết quả huấn luyện, đối sánh 4 thuật toán Học máy và mô hình kết hợp trên bộ dữ liệu 3,570 loài thực vật Việt Nam (310,647 ảnh).
+                        </p>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <a href="reports/Bao_Cao_Do_An_BioLens_Phan_1_Baseline.docx" download class="btn btn-secondary">
+                            <span>Tải Báo cáo Phần 1 (.docx)</span>
+                        </a>
+                        <a href="reports/Bao_Cao_Do_An_BioLens_Phan_2_Finetuned_Day_Du.docx" download class="btn btn-primary">
+                            <span>Tải Báo cáo Đầy đủ (.docx)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Thẻ chỉ số tổng quan -->
+            <div class="metrics-kpi-grid" id="benchmarkKpiGrid"></div>
+
+            <!-- Bảng so sánh hiệu năng các mô hình -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Bảng so sánh hiệu năng các mô hình</h3>
+                    <div class="organ-pills" id="benchmarkScaleSelector">
+                        <button type="button" class="organ-pill active" data-scale="top50">Top-50 Loài</button>
+                        <button type="button" class="organ-pill" data-scale="top100">Top-100 Loài</button>
+                        <button type="button" class="organ-pill" data-scale="top500">Top-500 Loài</button>
+                        <button type="button" class="organ-pill" data-scale="full3570">Toàn bộ (3,570)</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="scientific-table" id="benchmarkComparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Tên Mô hình</th>
+                                <th>Nhóm Thuật toán</th>
+                                <th>Top-1 Accuracy</th>
+                                <th>Top-3 Accuracy</th>
+                                <th>Top-5 Accuracy</th>
+                                <th>Macro F1</th>
+                                <th>Weighted F1</th>
+                                <th>Thời gian Train</th>
+                                <th>Độ trễ / Ảnh</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bảng Đối sánh Ablation Study: Phần 1 vs Phần 2 -->
+            <div class="card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h3 class="card-title">Đối sánh kết quả trước và sau tinh chỉnh (Phần 1 vs Phần 2)</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="scientific-table" id="ablationComparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Mô hình</th>
+                                <th>Phần 1 Top-1</th>
+                                <th>Phần 2 Top-1</th>
+                                <th>Mức tăng Top-1</th>
+                                <th>Phần 1 Top-5</th>
+                                <th>Phần 2 Top-5</th>
+                                <th>Mức tăng Top-5</th>
+                                <th>Weighted F1 (Phần 1 → 2)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bảng Phân cấp Sinh học & Mật độ mẫu -->
+            <div class="benchmark-two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Độ chính xác theo bậc phân loại sinh học</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="scientific-table" id="hierarchicalAccuracyTable">
+                            <thead>
+                                <tr>
+                                    <th>Cấp Phân loại</th>
+                                    <th>Top-1 Accuracy</th>
+                                    <th>Top-5 Accuracy</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Độ chính xác theo nhóm mật độ ảnh</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="scientific-table" id="shotGroupTable">
+                            <thead>
+                                <tr>
+                                    <th>Nhóm Mật độ Ảnh</th>
+                                    <th>Số Loài</th>
+                                    <th>Prototype Top-1</th>
+                                    <th>Ensemble Top-1</th>
+                                    <th>Ensemble Top-5</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khung đánh giá Bộ lọc OOD & Phân bố Dữ liệu -->
+            <div class="benchmark-two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Hiệu quả bộ lọc từ chối ảnh ngoại lai</h3>
+                    </div>
+                    <div id="oodBenchmarkBox" class="ood-benchmark-box"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Thống kê bộ dữ liệu</h3>
+                    </div>
+                    <div id="datasetStatsBox" class="ood-benchmark-box"></div>
+                </div>
+            </div>
+
+            <!-- THƯ VIỆN 11 BIỂU ĐỒ KHOA HỌC -->
+            <div class="card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h3 class="card-title">Biểu đồ phân tích thực nghiệm (11 biểu đồ)</h3>
+                </div>
+                <div id="scientificChartsGallery" class="charts-gallery-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal xem chi tiết Hồ sơ Loài khi bấm từ Bách khoa 3,570 loài -->
+    <div id="speciesModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <span class="taxon-key-badge" id="modalSpeciesKey"></span>
+                    <h3 id="modalVietnameseName" class="modal-title"></h3>
+                    <p id="modalScientificName" class="modal-latin"></p>
+                </div>
+                <div class="modal-header-actions">
+                    <button type="button" id="modalTestIdentifyBtn" class="btn btn-primary-sm">Thử nhận diện loài này</button>
+                    <button type="button" id="closeModalBtn" class="btn btn-light-sm">✕ Đóng</button>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBodyContent"></div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>BioLens Vietnam — Hệ thống nhận diện 3,570 loài thực vật &amp; dược liệu Việt Nam</p>
+        </div>
+    </footer>
+
+    <script src="js/camera.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
