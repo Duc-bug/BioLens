@@ -1,11 +1,13 @@
 # 🌿 BioLens Vietnam — Hệ thống Nhận diện Sinh vật & Thực vật Dược liệu Việt Nam qua Ảnh (3,570 Loài)
 
+[![Live Web Demo](https://img.shields.io/badge/🌐%20Live%20Web%20Demo-duc--bug.github.io%2FBioLens-1E5631?style=flat-square)](https://duc-bug.github.io/BioLens/)
 [![Dataset: VietMediSpecies2026](https://img.shields.io/badge/Dataset-VietMediSpecies2026%20(SciDB)-1E5631?style=flat-square)](https://www.scidb.cn/en/detail?dataSetId=d2e66ca3d73540739a39789d9b1cf989#p5)
 [![Species: 3,570](https://img.shields.io/badge/Taxonomy-3,570%20Species%20(GBIF)-2D7A47?style=flat-square)](https://www.gbif.org/)
 [![Images: 310,647](https://img.shields.io/badge/Full%20Dataset-310,647%20Images-1E5631?style=flat-square)](https://www.scidb.cn/en/detail?dataSetId=d2e66ca3d73540739a39789d9b1cf989#p5)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square)](https://www.python.org/)
 [![PyTorch CUDA FP16](https://img.shields.io/badge/PyTorch-CUDA%20Mixed%20Precision%20FP16-EE4C2C?style=flat-square)](https://pytorch.org/)
 
+**🌐 Trang Web Demo Trực tuyến (GitHub Pages):** **[https://duc-bug.github.io/BioLens/](https://duc-bug.github.io/BioLens/)**  
 **Đồ án Môn Học máy và Ứng dụng (Machine Learning & Applications)**  
 **Bộ dữ liệu thực nghiệm chính thức:** `VietMediSpecies2026` — **3,570 loài có ảnh thực tế / 310,647 ảnh thực địa / 4,799 bản ghi chuẩn GBIF**.
 
