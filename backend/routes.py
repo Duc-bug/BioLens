@@ -182,7 +182,12 @@ async def list_and_search_species(
     formatted_items = []
     for it in slice_items:
         samples = it.get("sampleImagePaths", [])
-        thumb_url = f"/api/image/{samples[0]}" if samples else None
+        s_key = it.get("speciesKey", "")
+        thumb_url = None
+        if samples and (DATASET_ROOT / samples[0]).exists():
+            thumb_url = f"/api/image/{samples[0]}"
+        elif (DATASET_ROOT / "samples_thumb" / f"{s_key}.jpg").exists():
+            thumb_url = f"/api/image/samples_thumb/{s_key}.jpg"
         formatted_items.append(
             {
                 **it,
@@ -211,8 +216,8 @@ async def get_species_full_profile(species_key: str):
 
 @router.get("/image/{species_key}/{filename}")
 async def serve_dataset_specimen_image(species_key: str, filename: str):
-    """Phục vụ ảnh gốc từ thư mục dữ liệu E:\\VietMediSpecies2026\\<species_key>\\<filename>."""
-    if not species_key.isdigit() or ".." in filename or "/" in filename or "\\" in filename:
+    """Phục vụ ảnh gốc từ thư mục dữ liệu hoặc thư mục ảnh đại diện samples_thumb."""
+    if not (species_key.isdigit() or species_key == "samples_thumb") or ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Đường dẫn ảnh không hợp lệ.")
     img_path = DATASET_ROOT / species_key / filename
     if not img_path.exists() or not img_path.is_file():
