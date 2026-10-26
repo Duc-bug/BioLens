@@ -104,12 +104,12 @@ Hệ thống tích hợp thuật toán ánh xạ ngữ nghĩa đa chiều (`map_
 
 ---
 
-## 5. THỰC THI & KIỂM THỬ KHOA HỌC (EXPERIMENTAL VERIFICATION)
+## 5. THỰC THI & KIỂM ĐỊNH KHOA HỌC (EXPERIMENTAL VERIFICATION)
 
-Hệ thống đã trải qua bộ kiểm thử tích hợp tự động (`scripts/test_nutraceutical.py`) với **5 bài test chuẩn**:
+Hệ thống đã trải qua quy trình thẩm định thuật toán và kiểm soát an toàn dữ liệu với **5 tiêu chí chuẩn**:
 
-1. **Test nạp Database toàn vẹn:** Xác nhận nạp đủ 3,570 loài từ `nutraceutical_registry.json` không xảy ra lỗi schema hoặc thiếu trường dữ liệu.
-2. **Test loài an toàn (Sâm bố chính - *Abelmoschus sagittifolius*, GBIF #3940600):**
+1. **Thẩm định nạp Database toàn vẹn:** Xác nhận nạp đủ 3,570 loài từ `nutraceutical_registry.json` không xảy ra lỗi schema hoặc thiếu trường dữ liệu.
+2. **Thẩm định loài an toàn (Sâm bố chính - *Abelmoschus sagittifolius*, GBIF #3940600):**
    - Xác nhận `isSafe = True`.
    - Sinh tự động 2 công thức chuẩn: *Trà thảo mộc dưỡng sinh* & *Canh tiềm bồi bổ khí huyết*.
 3. **Test loài kịch độc (Lá ngón - *Gelsemium elegans*, GBIF #4020282):**
