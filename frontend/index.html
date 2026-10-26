@@ -514,18 +514,64 @@
                     <div class="nutra-hero-badge">🌿 Cây Thuốc &amp; Ẩm Thực Đời Sống</div>
                     <h2 class="nutra-hero-title">Gợi Ý Ăn Uống &amp; Trà Thảo Mộc</h2>
                     <p class="nutra-hero-desc">
-                        Gợi ý cách dùng cây thuốc làm món ăn bồi bổ (canh hầm, cháo) và trà thảo mộc hàng ngày,
-                        tính toán liều lượng an toàn và nhắc nhở các món kỵ nhau.
+                        Cẩm nang dược thiện dân gian chuẩn xác đối chiếu theo Dược điển Việt Nam V &amp; GS. Đỗ Tất Lợi.
+                        Quy trình sơ chế khử độc/khử đắng, định lượng gram và nhiệt độ đun nấu chi tiết 5–7 bước.
                     </p>
                 </div>
                 <div class="nutra-stats-grid">
                     <div class="nutra-stat-pill">
-                        <span class="nutra-stat-num">2,074</span>
-                        <span class="nutra-stat-label">Loài nấu canh &amp; pha trà</span>
+                        <span class="nutra-stat-num">155</span>
+                        <span class="nutra-stat-label">Loài ẩm thực &amp; trà dân gian</span>
                     </div>
                     <div class="nutra-stat-pill">
                         <span class="nutra-stat-num">179</span>
                         <span class="nutra-stat-label">Cây độc bị chặn 100%</span>
+                    </div>
+                    <div class="nutra-stat-pill">
+                        <span class="nutra-stat-num">3,236</span>
+                        <span class="nutra-stat-label">Dược liệu dùng theo đơn</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khung Hỏi cây gì cũng biết (Natural Language Q&A) -->
+            <div class="card" style="margin-top:16px;border:1px solid #c7d2fe;background:linear-gradient(180deg, #f8faff 0%, #ffffff 100%);">
+                <div class="card-header" style="border-bottom:none;padding-bottom:6px;">
+                    <h3 class="card-title" style="display:flex;align-items:center;gap:8px;font-size:16px;">
+                        <span>💬 Hỏi cây gì cũng biết (Tra cứu an toàn &amp; Ẩm thực)</span>
+                        <span style="font-size:11px;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-weight:600;">Dữ liệu chuẩn y khoa</span>
+                    </h3>
+                    <p style="font-size:13px;color:var(--text-muted);margin-top:2px;">
+                        Hỏi bất kỳ điều gì: <em>"Cây này ăn được không?", "Có độc không?", "Nấu món gì bổ xương khớp?", "Kỵ món nào?", "Bị ho uống trà gì?"</em>
+                    </p>
+                </div>
+                <div style="padding:0 16px 16px;">
+                    <div class="explorer-search-group" style="display:flex;gap:8px;">
+                        <input
+                            type="text"
+                            id="nutraQaInput"
+                            class="form-input"
+                            placeholder="Ví dụ: Cây chanh pha nước sôi 100°C có tốt không? / Lá lốt nấu với gì? / Cây ngải cứu bà bầu ăn được không?"
+                            style="flex:1;"
+                        />
+                        <button type="button" id="nutraQaBtn" class="btn btn-primary" style="white-space:nowrap;display:flex;align-items:center;gap:6px;">
+                            <span>✨ Hỏi ngay</span>
+                        </button>
+                    </div>
+
+                    <!-- Gợi ý câu hỏi nhanh -->
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span style="font-size:12px;color:var(--text-muted);font-weight:500;">Câu hỏi phổ biến:</span>
+                        <button type="button" class="qa-quick-chip" data-q="Cây chanh pha nước sôi 100°C được không?">🍋 Chanh pha nước sôi?</button>
+                        <button type="button" class="qa-quick-chip" data-q="Cây ngải cứu bà bầu ăn được không?">🤰 Ngải cứu với bà bầu?</button>
+                        <button type="button" class="qa-quick-chip" data-q="Cây lá ngón ăn được không?">🚫 Lá ngón ăn được không?</button>
+                        <button type="button" class="qa-quick-chip" data-q="Cây lá lốt ăn với món gì bổ xương khớp?">🥩 Lá lốt nấu món gì?</button>
+                        <button type="button" class="qa-quick-chip" data-q="Bị ho khan rát họng nên uống trà gì?">🍵 Trị ho khan rát họng?</button>
+                    </div>
+
+                    <!-- Hộp kết quả trả lời Q&A -->
+                    <div id="nutraQaResultBox" class="card hidden" style="margin-top:14px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;">
+                        <div id="nutraQaResultContent" style="font-size:14px;line-height:1.6;color:var(--text-color);"></div>
                     </div>
                 </div>
             </div>
@@ -538,7 +584,7 @@
                             type="text"
                             id="nutraSearchInput"
                             class="form-input"
-                            placeholder="Nhập triệu chứng hoặc nhu cầu: mất ngủ, nóng trong, bồi bổ sau ốm, mỏi gối..."
+                            placeholder="Nhập triệu chứng hoặc thảo mộc: mất ngủ, thanh nhiệt mát gan, ho đờm, đau lưng..."
                         />
                         <button type="button" id="nutraSearchBtn" class="btn btn-primary" style="white-space:nowrap;">
                             🔍 Tìm món phù hợp
@@ -589,6 +635,23 @@
                 </div>
             </div>
             <div class="modal-body" id="modalBodyContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal xem chi tiết Cách chế biến (5–7 bước) Dược thiện & Ẩm thực -->
+    <div id="recipeDetailModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="modal-dialog" style="max-width:680px;">
+            <div class="modal-header" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;">
+                <div>
+                    <span id="recipeModalCategory" style="font-size:11px;font-weight:600;background:#dcfce7;color:#166534;padding:3px 8px;border-radius:12px;"></span>
+                    <h3 id="recipeModalTitle" class="modal-title" style="margin-top:4px;color:#14532d;"></h3>
+                    <p id="recipeModalBenefit" style="font-size:13px;color:#15803d;margin-top:2px;"></p>
+                </div>
+                <div class="modal-header-actions">
+                    <button type="button" id="closeRecipeModalBtn" class="btn btn-light-sm">✕ Đóng</button>
+                </div>
+            </div>
+            <div class="modal-body" id="recipeModalBodyContent" style="padding:18px;"></div>
         </div>
     </div>
 

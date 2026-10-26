@@ -28,10 +28,29 @@ from dataset.nutraceutical_rules import (
     TOXIC_KEYWORDS,
     HEALTH_GOALS,
     HERB_FOOD_INCOMPATIBILITIES,
-    SPECIAL_POPULATION_WARNINGS,
+    AUTHENTIC_FOLK_RECIPES,
 )
 
 OUTPUT_REGISTRY_PATH = STORAGE_DIR / "catalog" / "nutraceutical_registry.json"
+
+
+def find_authentic_folk_recipe(sp_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Tìm kiếm công thức dân gian chuẩn xác từ AUTHENTIC_FOLK_RECIPES."""
+    vn_name = (sp_data.get("primaryVietnameseName") or "").lower()
+    canonical = (sp_data.get("canonicalName") or "").lower()
+    scientific = (sp_data.get("scientificName") or "").lower()
+    combined_name = f"{vn_name} {canonical} {scientific}"
+
+    for key, item in AUTHENTIC_FOLK_RECIPES.items():
+        for kw in item["keywords"]:
+            # Khớp từ khóa độc lập hoặc có ranh giới từ để tránh khớp nhầm
+            pattern = rf"(^|\s|/|\()({re.escape(kw)})(\s|$|/|\))"
+            if re.search(pattern, combined_name):
+                return item["recipes"]
+            # Hoặc kw nằm trong vn_name nếu kw dài hơn 4 ký tự
+            if len(kw) >= 4 and kw in vn_name:
+                return item["recipes"]
+    return []
 
 
 def check_is_toxic(species_key: str, sp_data: Dict[str, Any]) -> tuple[bool, str]:
@@ -73,9 +92,18 @@ def check_is_toxic(species_key: str, sp_data: Dict[str, Any]) -> tuple[bool, str
 
 
 def determine_edibility_grade(sp_data: Dict[str, Any], is_toxic: bool) -> tuple[str, str]:
-    """Phan cap muc do an toan am thuc."""
+    """Phan cap muc do an toan am thuc theo su that khoa hoc va ghi chep duoc dien."""
     if is_toxic:
         return GRADE_TOXIC_FORBIDDEN, "Tuyệt đối không dùng trong ẩm thực hoặc đồ uống (Nguy cơ ngộ độc)."
+
+    # 1. Nếu có công thức dân gian chuẩn xác trong AUTHENTIC_FOLK_RECIPES
+    authentic = find_authentic_folk_recipe(sp_data)
+    if authentic:
+        # Nếu có món canh/cháo -> CULINARY_TONIC, nếu chỉ có trà/nước ép -> BEVERAGE_INFUSION
+        has_food = any("canh" in r["title"].lower() or "cháo" in r["title"].lower() or "tiềm" in r["title"].lower() or "chả" in r["title"].lower() or "trứng" in r["title"].lower() for r in authentic)
+        if has_food:
+            return GRADE_CULINARY_TONIC, "Dược thực đồng nguyên (Medicine and Food Homology) — Thích hợp chế biến món ăn dưỡng sinh bồi bổ."
+        return GRADE_BEVERAGE_INFUSION, "Thức uống dưỡng sinh & Trà thảo dược dân gian truyền thống."
 
     vn_name = (sp_data.get("primaryVietnameseName") or "").lower()
     sections = sp_data.get("profileSections", {})
@@ -84,34 +112,31 @@ def determine_edibility_grade(sp_data: Dict[str, Any], is_toxic: bool) -> tuple[
     overview = (sections.get("overview") or "").lower()
     combined = f"{vn_name} {parts} {medicinal} {overview}"
 
-    # 1. Kiem tra nhom Gia vi & Tinh dau
-    spice_kws = ["gia vị", "hương liệu", "quế", "hồi", "thảo quả", "gừng", "sả", "hành", "tỏi", "tiêu", "tía tô", "kinh giới", "mùi tàu", "húng quế"]
-    for kw in spice_kws:
-        if kw in combined:
-            return GRADE_SPICE_AROMATIC, "Gia vị thảo mộc kích thích tiêu hóa, tạo hương thơm & làm ấm tỳ vị."
-
-    # 2. Kiem tra nhom Canh, Chao, Ham bo duong (Culinary Tonic)
-    culinary_kws = [
-        "nấu canh", "hầm", "cháo", "nấu cháo", "xào", "luộc", "ăn sống", "làm rau", "rau rừng",
-        "củ mài", "hoài sơn", "sâm bố chính", "đẳng sâm", "ý dĩ", "hạt sen", "ngải cứu",
-        "lá lốt", "đương quy", "bổ dưỡng", "thực phẩm", "trái cây", "quả ăn được", "măng"
+    # 2. Kiểm tra nhóm Rau ăn, Canh quen thuộc có ghi nhận thực tế
+    common_vegetables = [
+        "rau muống", "rau dền", "rau ngót", "mồng tơi", "rau lang", "rau đay", "cải cúc",
+        "bầu", "bí xanh", "bí đỏ", "mướp hương", "mướp đắng", "khổ qua", "rau má", "rau tàu bay",
+        "củ mài", "hoài sơn", "hạt sen", "ngải cứu", "lá lốt", "măng tây", "chuối hột"
     ]
-    for kw in culinary_kws:
-        if kw in combined:
-            return GRADE_CULINARY_TONIC, "Dược thực đồng nguyên (Medicine and Food Homology) — Thích hợp nấu canh, cháo, hầm tiềm bồi bổ."
+    for veg in common_vegetables:
+        if veg in vn_name:
+            return GRADE_CULINARY_TONIC, "Dược thực đồng nguyên — Cây thực phẩm dân dã kết hợp dược tính bồi bổ sức khỏe."
 
-    # 3. Kiem tra nhom Tra & Thuc uong duong sinh (Beverage Infusion)
-    beverage_kws = [
-        "uống thay trà", "hãm trà", "pha trà", "nước sắc", "thanh nhiệt", "giải khát", "hoa cúc",
-        "lá sen", "lá vối", "đinh lăng", "bạc hà", "kim ngân hoa", "cỏ ngọt", "atiso",
-        "chè vằng", "trà thảo mộc", "mát gan", "hạ sốt"
-    ]
-    for kw in beverage_kws:
-        if kw in combined:
-            return GRADE_BEVERAGE_INFUSION, "Thích hợp hãm trà thảo mộc, nước thanh lọc dưỡng sinh hàng ngày."
+    # 3. Kiểm tra nhóm Gia vị & Tinh dầu quen thuộc
+    common_spices = ["hành", "tỏi", "tiêu", "sả", "quế", "hồi", "thảo quả", "tía tô", "kinh giới", "mùi tàu", "húng quế", "húng chanh"]
+    for sp in common_spices:
+        pattern = rf"(^|\s)({re.escape(sp)})(\s|$)"
+        if re.search(pattern, vn_name):
+            return GRADE_SPICE_AROMATIC, "Gia vị thảo mộc kích thích tiêu hóa, khử tanh & làm ấm tỳ vị."
 
-    # 4. Neu khong thuoc cac nhom tren: Thuoc tri benh chuyen biet
-    return GRADE_MEDICINAL_ONLY, "Dược liệu chuyên dụng: Khuyến cáo dùng làm thuốc có kiểm soát liều lượng, không dùng làm ẩm thực đại trà."
+    # 4. Kiểm tra nhóm Trà thảo dược dân gian thực thụ
+    common_teas = ["chè xanh", "trà xanh", "lá vối", "nụ vối", "atiso", "cúc hoa", "hoa cúc", "tâm sen", "chè vằng", "chè dây", "kim ngân hoa", "cỏ ngọt", "cà gai leo"]
+    for ct in common_teas:
+        if ct in vn_name:
+            return GRADE_BEVERAGE_INFUSION, "Thích hợp hãm trà thảo mộc, nước thanh nhiệt dưỡng sinh giải độc."
+
+    # 5. Các loài còn lại trong 3,570 loài: Là dược liệu cây rừng/thuốc chữa bệnh chuyên biệt
+    return GRADE_MEDICINAL_ONLY, "Dược liệu chuyên khoa: Chỉ dùng làm thuốc sắc uống hoặc dùng ngoài theo chỉ định y học cổ truyền. Trong đời sống ẩm thực dân tộc chưa có ghi chép làm món ăn/thức uống thường ngày."
 
 
 def map_health_goals(sp_data: Dict[str, Any]) -> List[str]:
@@ -131,7 +156,6 @@ def map_health_goals(sp_data: Dict[str, Any]) -> List[str]:
         if score >= 1:
             matched_goals.append(goal_id)
 
-    # Mac dinh neu it qua, gan muc phu hop
     if not matched_goals:
         matched_goals = ["bo_khi_duong_huyet", "thanh_nhiet_giai_doc"]
 
@@ -139,96 +163,21 @@ def map_health_goals(sp_data: Dict[str, Any]) -> List[str]:
 
 
 def generate_recipes_for_species(sp_data: Dict[str, Any], grade: str, matched_goals: List[str]) -> List[Dict[str, Any]]:
-    """Sinh cong thuc mon an - thuc uong duong sinh cho loai."""
+    """Trích xuất công thức dược thiện dân gian chuẩn xác (5–7 bước).
+    Tuyệt đối không bịa đặt template rập khuôn cho các loài cây rừng hoặc dược liệu chuyên khoa.
+    """
     if grade in (GRADE_TOXIC_FORBIDDEN, GRADE_MEDICINAL_ONLY):
         return []
 
-    vn_name = sp_data.get("primaryVietnameseName") or sp_data.get("canonicalName")
-    sections = sp_data.get("profileSections", {})
-    parts_raw = sections.get("partsUsed") or "Lá hoặc thân"
-    primary_goal_id = matched_goals[0] if matched_goals else "bo_khi_duong_huyet"
-    goal_meta = HEALTH_GOALS.get(primary_goal_id, HEALTH_GOALS["bo_khi_duong_huyet"])
+    # Ưu tiên 1: Lấy trực tiếp từ cơ sở tri thức công thức chuẩn AUTHENTIC_FOLK_RECIPES
+    authentic = find_authentic_folk_recipe(sp_data)
+    if authentic:
+        return authentic
 
-    recipes: List[Dict[str, Any]] = []
+    # Nếu không nằm trong danh mục đã được kiểm chứng ẩm thực:
+    # Trả về rỗng để tránh sai sự thật y khoa.
+    return []
 
-    # Cong thuc 1: Tra / Thuc uong duong sinh
-    if grade in (GRADE_BEVERAGE_INFUSION, GRADE_CULINARY_TONIC, GRADE_SPICE_AROMATIC):
-        recipes.append({
-            "recipe_id": f"rec_tea_{sp_data.get('speciesKey')}",
-            "title": f"Trà Thảo Mộc Dưỡng Sinh {vn_name}",
-            "category": "Thức uống dưỡng sinh & Trà thảo dược",
-            "preparation_time": "15 phút",
-            "target_benefit": goal_meta["name"],
-            "ingredients": [
-                f"{vn_name} (Khô: 8–12g hoặc Tươi: 20–30g, rửa sạch ráo nước)",
-                "Táo đỏ tân cương: 3 quả (cắt lát)",
-                "Kỷ tử: 10 hạt",
-                "Nước sôi: 500 – 700 ml (90°C – 95°C)"
-            ],
-            "step_by_step": [
-                "Bước 1: Rửa sạch thảo dược bằng nước ấm để loại bỏ bụi phấn tự nhiên.",
-                "Bước 2: Cho thảo mộc, táo đỏ và kỷ tử vào ấm trà gốm hoặc bình giữ nhiệt.",
-                "Bước 3: Rót 200ml nước sôi lắc nhẹ để tráng trà rồi chắt bỏ nước đầu.",
-                "Bước 4: Châm 500ml nước sôi còn lại, đậy nắp hãm trong 12–15 phút để hoạt chất khuếch tán.",
-                "Bước 5: Thưởng thức từng ngụm ấm trong ngày (có thể thêm 1 thìa mật ong hoặc cỏ ngọt nếu thích vị ngọt thanh)."
-            ],
-            "optimal_timing": "Uống ấm sau bữa ăn sáng 30 phút hoặc đầu giờ chiều giúp tỉnh táo, thanh lọc tạng phủ.",
-            "cautions": "Không uống trà quá đặc trước giờ ngủ đối với người nhạy cảm với vị chát."
-        })
-
-    # Cong thuc 2: Canh / Sup tiem bo duong
-    if grade in (GRADE_CULINARY_TONIC, GRADE_SPICE_AROMATIC):
-        food_partner = goal_meta["default_foods"][0] if goal_meta.get("default_foods") else "Gà ác hoặc Sườn heo"
-        recipes.append({
-            "recipe_id": f"rec_soup_{sp_data.get('speciesKey')}",
-            "title": f"Canh Tiềm Dưỡng Khí {vn_name} Phối {food_partner}",
-            "category": "Canh hầm & Súp tiềm bồi bổ",
-            "preparation_time": "60–90 phút",
-            "target_benefit": f"Bổ khí huyết, trợ lực tiêu hóa & {goal_meta['name'].lower()}",
-            "ingredients": [
-                f"{vn_name}: 20–30g (thân, lá hoặc củ sơ chế sạch)",
-                f"{food_partner}: 300–400g (chặt miếng vừa ăn, chần qua nước sôi gừng)",
-                "Hạt sen tươi (hoặc khô ngâm mềm): 30g",
-                "Gừng tươi: 3 lát mỏng",
-                "Gia vị: 1 chút muối hồng hoặc nước mắm truyền thống thanh đạm"
-            ],
-            "step_by_step": [
-                f"Bước 1: Sơ chế {food_partner} chần qua nước sôi pha rượu gừng để khử mùi tanh, vớt ra xả nước lạnh.",
-                f"Bước 2: Thảo dược {vn_name} ngâm nước muối loãng 10 phút, vớt ra để ráo.",
-                "Bước 3: Cho nguyên liệu vào thố sứ hoặc nồi đất, đổ ngập nước (khoảng 800ml - 1 lít).",
-                "Bước 4: Đun sôi bùng, vớt bọt sạch rồi hạ lửa thật nhỏ (hoặc tiềm cách thủy) trong 60 phút đến khi thịt mềm rục.",
-                "Bước 5: Nêm chút muối nhạt vừa miệng, thêm vài cọng hành hoa hoặc ngò rí rồi tắt bếp."
-            ],
-            "optimal_timing": "Dùng nóng trong bữa ăn chính, thích hợp bồi dưỡng cuối tuần cho người mệt mỏi.",
-            "cautions": "Nên ăn nhạt để thận không phải làm việc quá tải và dược chất hấp thu tốt nhất."
-        })
-
-    # Cong thuc 3: Chao duong sinh
-    if grade in (GRADE_CULINARY_TONIC,):
-        recipes.append({
-            "recipe_id": f"rec_congee_{sp_data.get('speciesKey')}",
-            "title": f"Cháo Dưỡng Sinh {vn_name} & Hạt Sen Ý Dĩ",
-            "category": "Cháo dưỡng sinh dễ hấp thu",
-            "preparation_time": "45 phút",
-            "target_benefit": "Kiện tỳ dưỡng vị, êm dịu đường tiêu hóa, an giấc",
-            "ingredients": [
-                f"{vn_name} (nước cốt sắc hoặc băm nhuyễn): 15–20g",
-                "Gạo tẻ thơm trộn gạo nếp: 80g",
-                "Hạt sen hoặc Ý dĩ: 25g",
-                "Nước hầm xương hoặc nước luộc rau củ: 1 lít"
-            ],
-            "step_by_step": [
-                "Bước 1: Vo sạch gạo và ý dĩ/hạt sen, ngâm nước ấm 20 phút cho nở hạt.",
-                "Bước 2: Sắc thảo dược lấy 200ml nước cốt đặc (hoặc băm nhỏ lá nếu ăn được bã).",
-                "Bước 3: Ninh gạo cùng nước dùng đến khi cháo chín nhừ, nở bung hoa.",
-                "Bước 4: Đổ nước cốt thảo dược vào khuấy đều tay trên lửa nhỏ thêm 10 phút.",
-                "Bước 5: Múc ra bát, rắc chút tiêu cay nhẹ, ăn lúc cháo còn bốc khói ấm."
-            ],
-            "optimal_timing": "Ăn vào bữa sáng hoặc bữa xế chiều khi bụng đói nhẹ.",
-            "cautions": "Người tiểu đường nên ăn cháo nguyên hạt, không hầm quá nhuyễn."
-        })
-
-    return recipes
 
 
 def build_full_nutraceutical_registry():

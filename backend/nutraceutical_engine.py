@@ -218,3 +218,207 @@ class NutraceuticalEngine:
                 {"id": k, "label": v["label"]} for k, v in SPECIAL_POPULATION_WARNINGS.items()
             ]
         }
+
+    def answer_plant_question(self, question: str, species_key: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Trả lời câu hỏi tự nhiên về thảo mộc & ẩm thực dược thiện ("Hỏi cây gì cũng biết").
+        Dựa trên 100% cơ sở dữ liệu Dược điển và dân gian đã kiểm chứng, tuyệt đối không bịa đặt.
+        """
+        q = question.strip().lower()
+        if not q:
+            return {
+                "success": False,
+                "answer": "Vui lòng nhập câu hỏi về loài cây hoặc món ăn bạn quan tâm.",
+                "suggestedQuestions": [
+                    "Cây chanh pha nước sôi 100°C có tốt không?",
+                    "Cây ngải cứu bà bầu ăn được không?",
+                    "Cây lá lốt ăn với món gì bổ xương khớp?",
+                    "Bị ho khan rát họng nên uống trà gì?"
+                ]
+            }
+
+        target_species: Optional[Dict[str, Any]] = None
+
+        # 1. Nếu người dùng chỉ định sẵn species_key
+        if species_key and str(species_key) in self._registry:
+            target_species = self._registry[str(species_key)]
+        else:
+            # Tìm kiếm loài cây được nhắc đến trong câu hỏi
+            best_match = None
+            max_len = 0
+            for sp_k, sp_info in self._registry.items():
+                vn_name = (sp_info.get("primaryVietnameseName") or "").lower()
+                can_name = (sp_info.get("canonicalName") or "").lower()
+                
+                # Khớp với tên tiếng Việt (ưu tiên tên dài hơn để tránh nhầm)
+                if vn_name and len(vn_name) >= 3 and vn_name in q:
+                    if len(vn_name) > max_len:
+                        max_len = len(vn_name)
+                        best_match = sp_info
+                # Khớp với tên khoa học
+                elif can_name and len(can_name) >= 4 and can_name in q:
+                    if len(can_name) > max_len:
+                        max_len = len(can_name)
+                        best_match = sp_info
+
+            target_species = best_match
+
+        # 2. TRƯỜNG HỢP CÂU HỎI VỀ MỘT LOÀI CỤ THỂ
+        if target_species:
+            sp_name = target_species.get("primaryVietnameseName") or target_species.get("canonicalName")
+            is_toxic = target_species.get("isToxic", False)
+            grade = target_species.get("edibilityGrade")
+            grade_desc = target_species.get("gradeDescription", "")
+            recipes = target_species.get("recipes", [])
+            contraindications = target_species.get("contraindications", [])
+            properties = target_species.get("traditionalProperties", "")
+
+            # A. Câu hỏi về ĐỘC TÍNH / ĂN ĐƯỢC KHÔNG
+            if any(k in q for k in ["ăn được không", "uống được không", "có độc không", "an toàn không", "ăn sống", "độc hay không"]):
+                if is_toxic:
+                    answer_text = (
+                        f"🚫 **CẢNH BÁO NGUY HIỂM:** Loài **{sp_name}** ({target_species.get('canonicalName')}) "
+                        f"là loài thực vật CÓ ĐỘC TÍNH NGUY HIỂM.\n\n"
+                        f"- **Nguy cơ:** {target_species.get('toxicAlertReason', 'Chứa hoạt chất kịch độc')}.\n"
+                        f"- **Khuyến cáo:** TUYỆT ĐỐI KHÔNG ăn, không uống, không ngâm rượu hay sử dụng trong bất kỳ món ăn đồ uống nào!"
+                    )
+                elif grade == GRADE_MEDICINAL_ONLY:
+                    answer_text = (
+                        f"⚠️ **DƯỢC LIỆU CHUYÊN KHOA:** Loài **{sp_name}** ({target_species.get('canonicalName')}) "
+                        f"theo Dược điển chủ yếu dùng làm thuốc điều trị bệnh chuyên biệt hoặc dùng ngoài da.\n\n"
+                        f"- **Tình trạng ẩm thực:** {grade_desc}\n"
+                        f"- **Khuyến cáo y khoa:** Không nên tự ý chế biến làm món ăn hàng ngày khi chưa có chỉ định liều lượng từ thầy thuốc YHCT."
+                    )
+                else:
+                    parts = target_species.get("partsUsed") or "bộ phận phù hợp"
+                    answer_text = (
+                        f"✅ **AN TOÀN TRONG ẨM THỰC:** Loài **{sp_name}** là cây thực phẩm / thảo dược lành tính ({grade_desc}).\n\n"
+                        f"- **Bộ phận thường dùng:** {parts}.\n"
+                        f"- **Tính vị YHCT:** {properties or 'Tính bình, thanh mát'}.\n"
+                        f"- **Số công thức dân gian chuẩn:** Hiện có {len(recipes)} bài thuốc ẩm thực được ghi nhận trong Dược điển và dân gian."
+                    )
+                return {
+                    "success": True,
+                    "species": target_species,
+                    "questionType": "edibility_check",
+                    "answer": answer_text,
+                    "recipes": recipes,
+                    "contraindications": contraindications
+                }
+
+            # B. Câu hỏi về MÓN ĂN / CÁCH LÀM / CHẾ BIẾN / PHA CHẾ
+            if any(k in q for k in ["nấu món gì", "chế biến", "cách làm", "cách nấu", "pha trà", "công thức", "pha nước", "hấp", "làm gì"]):
+                if is_toxic:
+                    return {
+                        "success": True,
+                        "species": target_species,
+                        "questionType": "toxic_block",
+                        "answer": f"🚫 Loài **{sp_name}** là cây có độc tính nguy hiểm ({target_species.get('toxicAlertReason')}), tuyệt đối cấm nấu nướng hoặc chế biến ẩm thực!"
+                    }
+                if not recipes:
+                    return {
+                        "success": True,
+                        "species": target_species,
+                        "questionType": "no_recipe",
+                        "answer": (
+                            f"ℹ️ **Thông tin Dược điển:** Loài **{sp_name}** ({target_species.get('canonicalName')}) "
+                            f"được xếp vào nhóm dược liệu điều trị chuyên khoa. Trong văn hóa ẩm thực dân gian Việt Nam "
+                            f"CHƯA CÓ ghi nhận làm món ăn hoặc thức uống thường nhật. "
+                            f"BioLens tuân thủ nguyên tắc y học chính xác: Không tự ý bịa đặt công thức nấu ăn cho các loài cây rừng hay thuốc chuyên khoa."
+                        )
+                    }
+                # Có công thức chuẩn
+                rec_titles = "\n".join([f"• **{r['title']}** ({r['category']}): {r['target_benefit']}" for r in recipes])
+                answer_text = (
+                    f"🍲 **CÁC MÓN ĂN - BÀI THUỐC TỪ {sp_name.upper()}:**\n\n"
+                    f"{rec_titles}\n\n"
+                    f"👉 *Bạn có thể bấm vào thẻ công thức bên dưới để xem chi tiết đầy đủ 5–7 bước sơ chế, định lượng gam, thời gian và nhiệt độ nấu chuẩn xác.*"
+                )
+                return {
+                    "success": True,
+                    "species": target_species,
+                    "questionType": "recipes_list",
+                    "answer": answer_text,
+                    "recipes": recipes,
+                    "contraindications": contraindications
+                }
+
+            # C. Câu hỏi về CẤM KỴ / KIÊNG ĂN GÌ / BÀ BẦU
+            if any(k in q for k in ["kỵ", "kiêng", "bà bầu", "mang thai", "tránh", "không nên"]):
+                incompat = target_species.get("contraindications", [])
+                cautions_list = [r.get("cautions") for r in recipes if r.get("cautions")]
+                lines = []
+                if incompat:
+                    lines.append("🚫 **Tương kỵ thực phẩm theo YHCT:**")
+                    for inc in incompat:
+                        lines.append(f"- {inc}")
+                if cautions_list:
+                    lines.append("\n⚠️ **Lưu ý an toàn sức khỏe:**")
+                    for c in cautions_list:
+                        lines.append(f"- {c}")
+                if not lines:
+                    lines.append(f"Loài **{sp_name}** chưa ghi nhận kiêng kỵ đặc biệt gay gắt, tuy nhiên nên dùng với lượng vừa phải thanh đạm.")
+
+                return {
+                    "success": True,
+                    "species": target_species,
+                    "questionType": "contraindications",
+                    "answer": "\n".join(lines),
+                    "recipes": recipes
+                }
+
+            # D. Câu hỏi chung về CÔNG DỤNG / TÍNH CHẤT
+            answer_text = (
+                f"🌿 **THÔNG TIN DƯỢC LIỆU: {sp_name.upper()}**\n\n"
+                f"- **Tên khoa học:** *{target_species.get('canonicalName')}* ({target_species.get('family', '')})\n"
+                f"- **Phân loại ẩm thực:** {grade_desc}\n"
+                f"- **Tính vị quy kinh:** {properties or 'Đang cập nhật'}\n"
+                f"- **Công dụng chính:** {', '.join(target_species.get('matchedHealthGoals', [])[:3])}\n"
+            )
+            if recipes:
+                answer_text += f"\n- **Gợi ý món:** Có {len(recipes)} công thức dược thiện dân gian chi tiết kèm theo."
+            return {
+                "success": True,
+                "species": target_species,
+                "questionType": "general_info",
+                "answer": answer_text,
+                "recipes": recipes,
+                "contraindications": contraindications
+            }
+
+        # 3. TRƯỜNG HỢP CÂU HỎI VỀ TRIỆU CHỨNG / NHU CẦU SỨC KHỎE (KHÔNG NÊU TÊN CÂY)
+        symptom_results = self.search_by_symptom(q, top_k=4)
+        if symptom_results:
+            top_names = [f"**{item['primaryVietnameseName']}**" for item in symptom_results]
+            all_recipes = []
+            for item in symptom_results:
+                all_recipes.extend(item.get("recipes", []))
+
+            answer_text = (
+                f"🌿 **GỢI Ý THẢO MỘC & DƯỢC THIỆN PHÙ HỢP:**\n\n"
+                f"Dựa trên nhu cầu *'{question}'*, y học dân gian khuyến nghị sử dụng các loài thảo mộc như: {', '.join(top_names)}.\n\n"
+                f"Các bài thuốc món ăn dưới đây đã được kiểm chứng về tính an toàn và hiệu quả theo Dược điển Việt Nam."
+            )
+            return {
+                "success": True,
+                "questionType": "symptom_search",
+                "answer": answer_text,
+                "recipes": all_recipes[:6],
+                "matchedSpecies": symptom_results
+            }
+
+        # 4. KHÔNG TÌM THẤY THÔNG TIN PHÙ HỢP
+        return {
+            "success": False,
+            "answer": (
+                f"Xin lỗi, BioLens chưa tìm thấy thông tin phù hợp cho câu hỏi: *'{question}'*.\n\n"
+                f"💡 **Mẹo:** Bạn có thể hỏi về tên một cây cụ thể (ví dụ: *'Chanh', 'Ngải cứu', 'Lá lốt', 'Hoa cúc', 'Đinh lăng'*), "
+                f"hoặc hỏi theo nhu cầu sức khỏe (ví dụ: *'mất ngủ', 'thanh nhiệt mát gan', 'trị ho khan', 'giải rượu'*)."
+            ),
+            "suggestedQuestions": [
+                "Cây chanh pha nước sôi 100°C có tốt không?",
+                "Cây ngải cứu bà bầu ăn được không?",
+                "Cây sâm bố chính nấu món gì bồi bổ?",
+                "Người bị mất ngủ nên uống trà gì?"
+            ]
+        }

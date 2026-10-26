@@ -1252,6 +1252,83 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Cache lưu trữ công thức hiện tại để mở modal chi tiết
+    let currentRenderedRecipesMap = new Map();
+
+    function openRecipeDetailModal(recipe) {
+        if (!recipe) return;
+        const modal = document.getElementById("recipeDetailModal");
+        if (!modal) return;
+
+        document.getElementById("recipeModalCategory").textContent = recipe.category || "Ẩm thực dưỡng sinh";
+        document.getElementById("recipeModalTitle").textContent = recipe.title || "Công thức chi tiết";
+        document.getElementById("recipeModalBenefit").textContent = `🎯 Tác dụng: ${recipe.target_benefit || ""}`;
+
+        const ingredientsHtml = (recipe.ingredients || []).map(ing => `
+            <li style="margin-bottom:6px;color:#1e293b;">${ing}</li>
+        `).join("");
+
+        const stepsHtml = (recipe.step_by_step || []).map((step, idx) => `
+            <li style="margin-bottom:10px;padding-left:4px;color:#334155;line-height:1.6;">
+                ${step}
+            </li>
+        `).join("");
+
+        const timingHtml = recipe.optimal_timing ? `
+            <div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:10px 14px;border-radius:4px;margin-top:14px;font-size:13px;color:#1e40af;">
+                <strong>⏰ Thời điểm dùng tối ưu:</strong> ${recipe.optimal_timing}
+            </div>
+        ` : "";
+
+        const cautionHtml = recipe.cautions ? `
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;border-radius:4px;margin-top:10px;font-size:13px;color:#92400e;">
+                <strong>⚠️ Lưu ý &amp; Kiêng kỵ:</strong> ${recipe.cautions}
+            </div>
+        ` : "";
+
+        document.getElementById("recipeModalBodyContent").innerHTML = `
+            <div style="font-size:13px;margin-bottom:14px;color:var(--text-muted);">
+                ⏱️ <strong>Thời gian thực hiện:</strong> ${recipe.preparation_time || "15–30 phút"}
+            </div>
+
+            <div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                🥗 Nguyên liệu &amp; Định lượng chính xác:
+            </div>
+            <ul style="padding-left:20px;margin-bottom:18px;font-size:13.5px;">
+                ${ingredientsHtml}
+            </ul>
+
+            <div style="font-size:14px;font-weight:700;color:#15803d;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                👨‍🍳 Quy trình chế biến chi tiết (Từng bước):
+            </div>
+            <ol style="padding-left:22px;margin-bottom:14px;font-size:13.5px;">
+                ${stepsHtml}
+            </ol>
+
+            ${timingHtml}
+            ${cautionHtml}
+        `;
+
+        modal.classList.remove("hidden");
+    }
+
+    const closeRecipeModalBtn = document.getElementById("closeRecipeModalBtn");
+    if (closeRecipeModalBtn) {
+        closeRecipeModalBtn.addEventListener("click", () => {
+            const m = document.getElementById("recipeDetailModal");
+            if (m) m.classList.add("hidden");
+        });
+    }
+
+    const recipeDetailModal = document.getElementById("recipeDetailModal");
+    if (recipeDetailModal) {
+        recipeDetailModal.addEventListener("click", (e) => {
+            if (e.target === recipeDetailModal) {
+                recipeDetailModal.classList.add("hidden");
+            }
+        });
+    }
+
     function renderNutraCards(candidates) {
         const resultsGrid = document.getElementById("nutraResultsGrid");
         if (!resultsGrid) return;
@@ -1265,9 +1342,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        resultsGrid.innerHTML = candidates.map(c => {
+        currentRenderedRecipesMap.clear();
+
+        resultsGrid.innerHTML = candidates.map((c, cIdx) => {
             const recipes = c.recipes || [];
             const r = recipes[0] || {
+                recipe_id: `temp_${cIdx}`,
                 title: `Món Dưỡng Sinh ${c.primaryVietnameseName}`,
                 category: "Ẩm thực dưỡng sinh",
                 preparation_time: "30–60 phút",
@@ -1277,41 +1357,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 cautions: "Dùng đúng liều lượng."
             };
 
+            const recKey = r.recipe_id || `rec_${cIdx}`;
+            currentRenderedRecipesMap.set(recKey, r);
+
             const isTonic = c.edibilityGrade === "CULINARY_TONIC";
             const badgeClass = isTonic ? "nutra-badge-tonic" : (c.edibilityGrade === "BEVERAGE_INFUSION" ? "nutra-badge-infusion" : "nutra-badge-spice");
             const badgeText = isTonic ? "🍲 Canh / Cháo Tiềm" : (c.edibilityGrade === "BEVERAGE_INFUSION" ? "🍵 Trà Thảo Mộc" : "🌿 Gia Vị");
 
             return `
-                <article class="nutra-recipe-card">
-                    <div class="nutra-card-top">
-                        <span class="nutra-category-badge ${badgeClass}">${badgeText}</span>
-                        <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">⏱️ ${r.preparation_time}</span>
-                    </div>
-
-                    <h3 class="nutra-recipe-title">${r.title}</h3>
-                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
-                        <em>Loài: ${c.primaryVietnameseName} (${c.canonicalName})</em>
-                    </div>
-                    <div class="nutra-recipe-benefit">🎯 ${r.target_benefit}</div>
-
-                    <div class="nutra-section-header">Thành phần phối ngũ:</div>
-                    <ul class="nutra-ingredient-list">
-                        ${r.ingredients.map(ing => `<li>${ing}</li>`).join("")}
-                    </ul>
-
-                    <div class="nutra-section-header">Cách chế biến:</div>
-                    <ol class="nutra-step-list">
-                        ${r.step_by_step.slice(0, 3).map(s => `<li>${s}</li>`).join("")}
-                    </ol>
-
-                    ${c.contraindications && c.contraindications.length > 0 ? `
-                        <div class="nutra-cautions-box">
-                            <strong>Lưu ý kỵ:</strong> ${c.contraindications.join(" • ")}
+                <article class="nutra-recipe-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+                    <div>
+                        <div class="nutra-card-top">
+                            <span class="nutra-category-badge ${badgeClass}">${badgeText}</span>
+                            <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">⏱️ ${r.preparation_time}</span>
                         </div>
-                    ` : ""}
+
+                        <h3 class="nutra-recipe-title">${r.title}</h3>
+                        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+                            <em>Loài: ${c.primaryVietnameseName} (${c.canonicalName})</em>
+                        </div>
+                        <div class="nutra-recipe-benefit">🎯 ${r.target_benefit}</div>
+
+                        <div class="nutra-section-header">Thành phần phối ngũ:</div>
+                        <ul class="nutra-ingredient-list">
+                            ${r.ingredients.slice(0, 3).map(ing => `<li>${ing}</li>`).join("")}
+                            ${r.ingredients.length > 3 ? `<li style="color:var(--text-muted);font-style:italic;">+ ${r.ingredients.length - 3} gia vị/nguyên liệu khác...</li>` : ""}
+                        </ul>
+
+                        <div class="nutra-section-header">Các bước sơ bộ:</div>
+                        <ol class="nutra-step-list">
+                            ${r.step_by_step.slice(0, 2).map(s => `<li>${s}</li>`).join("")}
+                        </ol>
+
+                        ${c.contraindications && c.contraindications.length > 0 ? `
+                            <div class="nutra-cautions-box">
+                                <strong>Lưu ý kỵ:</strong> ${c.contraindications.join(" • ")}
+                            </div>
+                        ` : ""}
+                    </div>
+
+                    <div style="margin-top:14px;pt:8px;border-top:1px solid #f1f5f9;">
+                        <button type="button" class="btn btn-primary-sm btn-open-recipe" data-recipe-id="${recKey}" style="width:100%;justify-content:center;background:#15803d;color:#fff;">
+                            📖 Xem chi tiết cách làm (5–7 bước)
+                        </button>
+                    </div>
                 </article>
             `;
         }).join("");
+
+        // Gán sự kiện mở modal cho các nút
+        resultsGrid.querySelectorAll(".btn-open-recipe").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const recId = btn.dataset.recipeId;
+                const recData = currentRenderedRecipesMap.get(recId);
+                if (recData) {
+                    openRecipeDetailModal(recData);
+                }
+            });
+        });
     }
 
     // Sự kiện tìm kiếm trên Tab Dược Thiện
@@ -1335,5 +1438,112 @@ document.addEventListener("DOMContentLoaded", () => {
             executeNutraSearch(nutraSearchInput.value, null, nutraCategoryFilter.value);
         });
     }
+
+    // =========================================================================
+    // 5.4. TÍNH NĂNG "HỎI CÂY GÌ CŨNG BIẾT" (SMART PLANT Q&A)
+    // =========================================================================
+    const nutraQaInput = document.getElementById("nutraQaInput");
+    const nutraQaBtn = document.getElementById("nutraQaBtn");
+    const nutraQaResultBox = document.getElementById("nutraQaResultBox");
+    const nutraQaResultContent = document.getElementById("nutraQaResultContent");
+
+    async function executeNutraQa(questionText) {
+        const q = (questionText || "").trim();
+        if (!q || !nutraQaResultBox || !nutraQaResultContent) return;
+
+        nutraQaResultBox.classList.remove("hidden");
+        nutraQaResultContent.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);">
+                <div class="spinner" style="width:20px;height:20px;"></div>
+                <span>Đang tra cứu dữ liệu Dược điển và dân gian chuẩn xác...</span>
+            </div>
+        `;
+
+        try {
+            const resp = await fetch(apiUrl("/api/nutraceutical/ask"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: q })
+            });
+
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+
+            // Định dạng markdown cơ bản sang HTML
+            let formattedAnswer = (data.answer || "")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                .replace(/\n\n/g, "<br/><br/>")
+                .replace(/\n/g, "<br/>");
+
+            let extraHtml = "";
+
+            // Nếu câu trả lời có kèm danh sách bài thuốc, hiển thị các nút xem chi tiết
+            if (data.recipes && data.recipes.length > 0) {
+                data.recipes.forEach((rec, idx) => {
+                    const rKey = rec.recipe_id || `qa_rec_${idx}`;
+                    currentRenderedRecipesMap.set(rKey, rec);
+                });
+
+                extraHtml = `
+                    <div style="margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;">
+                        <div style="font-size:12.5px;font-weight:700;color:#166534;margin-bottom:8px;text-transform:uppercase;">
+                            🍲 Danh sách bài thuốc &amp; Cách làm chi tiết:
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                            ${data.recipes.map((rec, idx) => {
+                                const rKey = rec.recipe_id || `qa_rec_${idx}`;
+                                return `
+                                    <button type="button" class="btn btn-light-sm btn-qa-recipe" data-recipe-id="${rKey}" style="border:1px solid #86efac;background:#f0fdf4;color:#166534;font-weight:600;">
+                                        📖 ${rec.title}
+                                    </button>
+                                `;
+                            }).join("")}
+                        </div>
+                    </div>
+                `;
+            }
+
+            nutraQaResultContent.innerHTML = `
+                <div>
+                    <div style="font-size:14px;line-height:1.7;">${formattedAnswer}</div>
+                    ${extraHtml}
+                </div>
+            `;
+
+            // Gán sự kiện mở modal cho các nút công thức trong Q&A
+            nutraQaResultContent.querySelectorAll(".btn-qa-recipe").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const rData = currentRenderedRecipesMap.get(btn.dataset.recipeId);
+                    if (rData) openRecipeDetailModal(rData);
+                });
+            });
+
+        } catch (err) {
+            console.error("Lỗi hỏi đáp thảo mộc:", err);
+            nutraQaResultContent.innerHTML = `
+                <div style="color:#b91c1c;">
+                    ⚠️ Không thể kết nối với máy chủ phân tích y học. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.
+                </div>
+            `;
+        }
+    }
+
+    if (nutraQaBtn && nutraQaInput) {
+        nutraQaBtn.addEventListener("click", () => executeNutraQa(nutraQaInput.value));
+        nutraQaInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") executeNutraQa(nutraQaInput.value);
+        });
+    }
+
+    // Gán sự kiện click cho các chip câu hỏi mẫu
+    document.querySelectorAll(".qa-quick-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            const q = chip.dataset.q;
+            if (nutraQaInput) nutraQaInput.value = q;
+            executeNutraQa(q);
+        });
+    });
 });
+
 

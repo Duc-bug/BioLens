@@ -65,3 +65,8 @@ class NutraceuticalSymptomSearchRequest(BaseModel):
     gradeFilter: Optional[str] = None
     topK: int = 8
 
+
+class NutraceuticalAskRequest(BaseModel):
+    question: str
+    speciesKey: Optional[str] = None
+

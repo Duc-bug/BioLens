@@ -22,7 +22,11 @@ from configs.settings import (
 )
 from models.inference_engine import BioLensInferenceEngine
 from backend.nutraceutical_engine import NutraceuticalEngine
-from backend.schemas import NutraceuticalRecommendRequest, NutraceuticalSymptomSearchRequest
+from backend.schemas import (
+    NutraceuticalRecommendRequest,
+    NutraceuticalSymptomSearchRequest,
+    NutraceuticalAskRequest,
+)
 
 router = APIRouter(prefix="/api", tags=["BioLens API"])
 
@@ -370,4 +374,28 @@ async def get_nutraceutical_profile(species_key: str):
     if not profile:
         raise HTTPException(status_code=404, detail="Không tìm thấy hồ sơ ẩm thực cho loài này.")
     return profile
+
+
+@router.post("/nutraceutical/ask")
+async def ask_nutraceutical_question(req: NutraceuticalAskRequest):
+    """
+    Hỏi đáp tự nhiên về loài cây & bài thuốc ẩm thực dưỡng sinh ("Hỏi cây gì cũng biết").
+    Hỗ trợ tra cứu độc tính, cấm kỵ, bài thuốc dân gian 5-7 bước chi tiết.
+    """
+    nutra = get_nutra_engine()
+    return nutra.answer_plant_question(
+        question=req.question,
+        species_key=req.speciesKey
+    )
+
+
+@router.get("/nutraceutical/ask")
+async def ask_nutraceutical_question_get(q: str, species_key: Optional[str] = None):
+    """GET endpoint cho phép hỏi đáp nhanh từ URL hoặc thanh tìm kiếm."""
+    nutra = get_nutra_engine()
+    return nutra.answer_plant_question(
+        question=q,
+        species_key=species_key
+    )
+
 
