@@ -50,6 +50,16 @@
                     </svg>
                     <span>Thực nghiệm Học máy</span>
                 </button>
+                <button class="nav-tab" data-tab="nutraceutical">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                        <line x1="6" y1="1" x2="6" y2="4"/>
+                        <line x1="10" y1="1" x2="10" y2="4"/>
+                        <line x1="14" y1="1" x2="14" y2="4"/>
+                    </svg>
+                    <span>Bếp Dược Thiện &amp; Trà</span>
+                </button>
             </nav>
         </div>
     </header>
@@ -290,6 +300,18 @@
                                     </div>
                                 </div>
                             </section>
+
+                            <!-- KHUNG GỢI Ý DƯỢC THIỆN & CẢNH BÁO AN TOÀN ẨM THỰC -->
+                            <section id="identifyNutraSection" class="card nutraceutical-recommend-card hidden">
+                                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:20px;">🍲</span>
+                                        <h3 class="card-title" style="margin:0;">Gợi ý Dược Thiện &amp; Trà Dưỡng Sinh từ Loài Này</h3>
+                                    </div>
+                                    <span id="identifyNutraBadge" class="nutra-status-badge"></span>
+                                </div>
+                                <div id="identifyNutraContent" class="nutra-content-body"></div>
+                            </section>
                         </div>
                     </div>
                 </div>
@@ -478,6 +500,79 @@
                     <h3 class="card-title">Biểu đồ phân tích thực nghiệm (11 biểu đồ)</h3>
                 </div>
                 <div id="scientificChartsGallery" class="charts-gallery-grid"></div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 4: BẾP DƯỢC THIỆN & TRÀ DƯỠNG SINH (NUTRACEUTICAL RECOMMENDER)    -->
+        <!-- ===================================================================== -->
+        <section id="tab-nutraceutical" class="tab-panel">
+            <!-- Banner giới thiệu -->
+            <div class="nutra-hero-banner card">
+                <div class="nutra-hero-content">
+                    <div class="nutra-hero-badge">🌿 Triết lý Dược Thực Đồng Nguyên (Food As Medicine)</div>
+                    <h2 class="nutra-hero-title">Bếp Dược Thiện &amp; Trà Dưỡng Sinh 3,570 Loài</h2>
+                    <p class="nutra-hero-desc">
+                        Hệ thống thông minh gợi ý món ăn bài thuốc (canh tiềm, cháo dưỡng sinh), trà thảo mộc và thức uống bồi bổ
+                        được tính toán liều lượng khoa học, cá nhân hóa theo thể trạng và kiểm soát cấm kỵ an toàn tuyệt đối.
+                    </p>
+                </div>
+                <div class="nutra-stats-grid">
+                    <div class="nutra-stat-pill">
+                        <span class="nutra-stat-num">2,074</span>
+                        <span class="nutra-stat-label">Loài làm Dược thiện &amp; Trà</span>
+                    </div>
+                    <div class="nutra-stat-pill">
+                        <span class="nutra-stat-num">179</span>
+                        <span class="nutra-stat-label">Cây độc bị chặn 100%</span>
+                    </div>
+                    <div class="nutra-stat-pill">
+                        <span class="nutra-stat-num">12</span>
+                        <span class="nutra-stat-label">Thể trạng sức khỏe</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh tìm kiếm & Lọc thể trạng -->
+            <div class="card" style="margin-top:16px;">
+                <div class="explorer-filter-bar" style="margin-bottom:12px;">
+                    <div class="explorer-search-group" style="flex:1;">
+                        <input
+                            type="text"
+                            id="nutraSearchInput"
+                            class="form-input"
+                            placeholder="Nhập triệu chứng hoặc nhu cầu: mất ngủ, nóng trong, bồi bổ sau ốm, mỏi gối..."
+                        />
+                        <button type="button" id="nutraSearchBtn" class="btn btn-primary" style="white-space:nowrap;">
+                            🔍 Tìm món phù hợp
+                        </button>
+                    </div>
+                    <select id="nutraCategoryFilter" class="form-select" style="max-width:240px;">
+                        <option value="">Tất cả hình thức ẩm thực</option>
+                        <option value="CULINARY_TONIC">🍲 Canh &amp; Súp tiềm bổ</option>
+                        <option value="BEVERAGE_INFUSION">🍵 Trà &amp; Thức uống</option>
+                        <option value="SPICE_AROMATIC">🌿 Gia vị &amp; Thảo mộc thơm</option>
+                    </select>
+                </div>
+
+                <!-- Chips 12 Thể trạng sức khỏe chọn nhanh -->
+                <div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                        Gợi ý nhanh theo Thể trạng &amp; Nhu cầu bồi bổ:
+                    </div>
+                    <div id="nutraHealthChipsContainer" class="nutra-chips-wrapper"></div>
+                </div>
+            </div>
+
+            <!-- Khung trạng thái / Đang tải -->
+            <div id="nutraLoadingState" class="empty-state-card hidden" style="margin-top:16px;">
+                <div class="spinner" style="width:36px;height:36px;margin:0 auto 12px;"></div>
+                <p>Đang tìm kiếm và tối ưu hóa công thức dược thiện phù hợp nhất...</p>
+            </div>
+
+            <!-- Lưới hiển thị danh sách công thức gợi ý -->
+            <div id="nutraResultsContainer" style="margin-top:18px;">
+                <div id="nutraResultsGrid" class="nutra-cards-grid"></div>
             </div>
         </section>
     </main>

@@ -81,6 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
             loadSpeciesExplorer(currentExplorerPage);
         } else if (targetTab === "benchmarks") {
             loadBenchmarksDashboard();
+        } else if (targetTab === "nutraceutical") {
+            loadNutraceuticalDashboard();
         }
     }
 
@@ -284,6 +286,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const resp = await fetch(apiUrl(`/api/identify-demo?${params.toString()}`), {
                 method: "POST",
             });
+            if (!resp.ok) {
+                let errMsg = `Lỗi ${resp.status}`;
+                try {
+                    const errData = await resp.json();
+                    errMsg = errData.detail || errMsg;
+                } catch (_) {
+                    errMsg = await resp.text();
+                }
+                throw new Error(errMsg);
+            }
             const data = await resp.json();
             if (data.demoImageUrl) {
                 previewImage.src = data.demoImageUrl;
@@ -421,6 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderSpeciesMonographCard(data.topMatch);
         renderAlgorithmComparisonTable(data.algorithmComparison || {});
         renderTopCandidatesList(data.candidates || []);
+        renderIdentifyNutraBox(data.nutraceutical);
     }
 
     function renderSpeciesMonographCard(match) {
@@ -1048,4 +1061,274 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Lỗi tải bảng thực nghiệm:", err);
         }
     }
+
+    // =========================================================================
+    // 5. MODULE BẾP DƯỢC THIỆN & TRÀ DƯỠNG SINH (NUTRACEUTICAL RECOMMENDER)
+    // =========================================================================
+    let nutraMetadataCache = null;
+    let selectedNutraGoal = "";
+
+    // 5.1. Render hộp Dược thiện trong kết quả Nhận diện ảnh (Tab Identify)
+    function renderIdentifyNutraBox(nutra) {
+        const box = document.getElementById("identifyNutraSection");
+        const badge = document.getElementById("identifyNutraBadge");
+        const content = document.getElementById("identifyNutraContent");
+        if (!box || !badge || !content) return;
+
+        if (!nutra || !nutra.success) {
+            box.classList.add("hidden");
+            return;
+        }
+
+        box.classList.remove("hidden");
+
+        // Trường hợp 1: Cây có độc / Cấm ăn
+        if (!nutra.isSafe) {
+            badge.className = "nutra-status-badge nutra-status-danger";
+            badge.textContent = nutra.alertLevel === "DANGER_CRITICAL" ? "🚫 CÂY CÓ ĐỘC — CẤM ĂN" : "⚠️ DƯỢC LIỆU CHUYÊN KHOA";
+
+            content.innerHTML = `
+                <div class="nutra-danger-alert">
+                    <div class="nutra-danger-title">
+                        <span>⚠️</span>
+                        <span>${nutra.warningTitle || "Cảnh báo An toàn Dược liệu"}</span>
+                    </div>
+                    <p class="nutra-danger-text">${nutra.warningMessage}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Trường hợp 2: Dược thực đồng nguyên / Trà thảo mộc an toàn
+        badge.className = "nutra-status-badge nutra-status-safe";
+        badge.textContent = nutra.edibilityGrade === "CULINARY_TONIC" ? "🍲 Dược Thực Đồng Nguyên (Canh/Cháo)" : "🍵 Trà Thảo Mộc Dưỡng Sinh";
+
+        const recipes = nutra.recipes || [];
+        const contra = nutra.contraindications || [];
+
+        let recipesHtml = "";
+        if (recipes.length > 0) {
+            recipesHtml = `
+                <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:14px;margin-top:12px;">
+                    ${recipes.map(r => `
+                        <div class="nutra-recipe-card" style="padding:14px;background:#F9FBF9;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <span class="nutra-category-badge nutra-badge-tonic">${r.category}</span>
+                                <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">⏱️ ${r.preparation_time}</span>
+                            </div>
+                            <h4 style="font-size:15px;font-weight:700;margin:0 0 4px;color:#1B5E20;">${r.title}</h4>
+                            <p style="font-size:12px;color:#2E7D32;margin-bottom:8px;font-weight:500;">🎯 ${r.target_benefit}</p>
+                            
+                            <div class="nutra-section-header">Nguyên liệu:</div>
+                            <ul class="nutra-ingredient-list">
+                                ${r.ingredients.map(ing => `<li>${ing}</li>`).join("")}
+                            </ul>
+
+                            <div class="nutra-section-header">Các bước chế biến:</div>
+                            <ol class="nutra-step-list">
+                                ${r.step_by_step.slice(0, 3).map(st => `<li>${st}</li>`).join("")}
+                            </ol>
+
+                            ${r.cautions ? `<div class="nutra-cautions-box">⚠️ ${r.cautions}</div>` : ""}
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+        } else {
+            recipesHtml = `<p style="font-size:13px;color:var(--text-secondary);margin-top:10px;">Chưa có công thức chi tiết cho phân nhóm này.</p>`;
+        }
+
+        let contraHtml = "";
+        if (contra.length > 0) {
+            contraHtml = `
+                <div class="nutra-cautions-box" style="margin-top:12px;">
+                    <strong>Lưu ý kỵ thực phẩm:</strong> ${contra.join(" • ")}
+                </div>
+            `;
+        }
+
+        content.innerHTML = `
+            <div style="font-size:13px;color:#2E5A3D;line-height:1.6;margin-bottom:8px;">
+                <strong>Mục tiêu dưỡng sinh:</strong> ${(nutra.matchedHealthGoals || []).join(", ") || "Bồi bổ cơ thể"}.<br/>
+                <em>${nutra.gradeDescription || ""}</em>
+            </div>
+            ${contraHtml}
+            ${recipesHtml}
+        `;
+    }
+
+    // 5.2. Tải giao diện Tab Bếp Dược Thiện
+    async function loadNutraceuticalDashboard() {
+        const container = document.getElementById("nutraHealthChipsContainer");
+        const resultsGrid = document.getElementById("nutraResultsGrid");
+        if (!container) return;
+
+        // Tải metadata nếu chưa có
+        if (!nutraMetadataCache) {
+            try {
+                const resp = await fetch(apiUrl("/api/nutraceutical/metadata"));
+                if (resp.ok) {
+                    nutraMetadataCache = await resp.json();
+                }
+            } catch (err) {
+                console.warn("Chưa kết nối API metadata Dược thiện:", err);
+            }
+        }
+
+        if (nutraMetadataCache && nutraMetadataCache.healthGoals && container.children.length === 0) {
+            renderNutraHealthChips(nutraMetadataCache.healthGoals);
+        }
+
+        // Tải mặc định nếu chưa có kết quả
+        if (resultsGrid && resultsGrid.children.length === 0) {
+            executeNutraSearch("an thần ngủ ngon", null, null);
+        }
+    }
+
+    function renderNutraHealthChips(goals) {
+        const container = document.getElementById("nutraHealthChipsContainer");
+        if (!container) return;
+
+        container.innerHTML = goals.map(g => `
+            <button type="button" class="nutra-chip ${selectedNutraGoal === g.id ? 'active' : ''}" data-goal-id="${g.id}">
+                ${g.name}
+            </button>
+        `).join("");
+
+        container.querySelectorAll(".nutra-chip").forEach(chip => {
+            chip.addEventListener("click", () => {
+                container.querySelectorAll(".nutra-chip").forEach(c => c.classList.remove("active"));
+                if (selectedNutraGoal === chip.dataset.goalId) {
+                    selectedNutraGoal = "";
+                } else {
+                    chip.classList.add("active");
+                    selectedNutraGoal = chip.dataset.goalId;
+                }
+                const queryText = selectedNutraGoal ? chip.textContent.trim() : "dưỡng sinh";
+                document.getElementById("nutraSearchInput").value = queryText;
+                executeNutraSearch(queryText, null, document.getElementById("nutraCategoryFilter").value);
+            });
+        });
+    }
+
+    // 5.3. Tìm kiếm công thức món ăn & trà theo triệu chứng
+    async function executeNutraSearch(query, constitution, grade) {
+        const loading = document.getElementById("nutraLoadingState");
+        const resultsGrid = document.getElementById("nutraResultsGrid");
+        if (!resultsGrid) return;
+
+        if (loading) loading.classList.remove("hidden");
+        resultsGrid.innerHTML = "";
+
+        try {
+            const resp = await fetch(apiUrl("/api/nutraceutical/search"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    query: query || "bổ khí dưỡng huyết",
+                    userConstitution: constitution,
+                    gradeFilter: grade || null,
+                    topK: 9
+                })
+            });
+
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            renderNutraCards(data.candidates || []);
+        } catch (err) {
+            console.error("Lỗi tìm kiếm dược thiện:", err);
+            resultsGrid.innerHTML = `
+                <div class="empty-state-card" style="grid-column:1/-1;">
+                    <p style="color:var(--text-secondary);">Không tìm thấy công thức phù hợp hoặc chưa khởi động máy chủ.</p>
+                </div>
+            `;
+        } finally {
+            if (loading) loading.classList.add("hidden");
+        }
+    }
+
+    function renderNutraCards(candidates) {
+        const resultsGrid = document.getElementById("nutraResultsGrid");
+        if (!resultsGrid) return;
+
+        if (candidates.length === 0) {
+            resultsGrid.innerHTML = `
+                <div class="empty-state-card" style="grid-column:1/-1;">
+                    <p style="color:var(--text-secondary);">Không có món ăn phù hợp với từ khóa này. Hãy thử chọn các thể trạng trên.</p>
+                </div>
+            `;
+            return;
+        }
+
+        resultsGrid.innerHTML = candidates.map(c => {
+            const recipes = c.recipes || [];
+            const r = recipes[0] || {
+                title: `Món Dưỡng Sinh ${c.primaryVietnameseName}`,
+                category: "Ẩm thực dưỡng sinh",
+                preparation_time: "30–60 phút",
+                target_benefit: (c.matchedHealthGoals || []).join(", ") || "Bồi bổ sức khỏe",
+                ingredients: [`Thảo dược ${c.primaryVietnameseName}: 20g`, "Nước dùng bồi bổ: 800ml"],
+                step_by_step: ["Rửa sạch nguyên liệu.", "Đun sôi nhỏ lửa 45 phút.", "Dùng ấm khi còn nóng."],
+                cautions: "Dùng đúng liều lượng."
+            };
+
+            const isTonic = c.edibilityGrade === "CULINARY_TONIC";
+            const badgeClass = isTonic ? "nutra-badge-tonic" : (c.edibilityGrade === "BEVERAGE_INFUSION" ? "nutra-badge-infusion" : "nutra-badge-spice");
+            const badgeText = isTonic ? "🍲 Canh / Cháo Tiềm" : (c.edibilityGrade === "BEVERAGE_INFUSION" ? "🍵 Trà Thảo Mộc" : "🌿 Gia Vị");
+
+            return `
+                <article class="nutra-recipe-card">
+                    <div class="nutra-card-top">
+                        <span class="nutra-category-badge ${badgeClass}">${badgeText}</span>
+                        <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">⏱️ ${r.preparation_time}</span>
+                    </div>
+
+                    <h3 class="nutra-recipe-title">${r.title}</h3>
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+                        <em>Loài: ${c.primaryVietnameseName} (${c.canonicalName})</em>
+                    </div>
+                    <div class="nutra-recipe-benefit">🎯 ${r.target_benefit}</div>
+
+                    <div class="nutra-section-header">Thành phần phối ngũ:</div>
+                    <ul class="nutra-ingredient-list">
+                        ${r.ingredients.map(ing => `<li>${ing}</li>`).join("")}
+                    </ul>
+
+                    <div class="nutra-section-header">Cách chế biến:</div>
+                    <ol class="nutra-step-list">
+                        ${r.step_by_step.slice(0, 3).map(s => `<li>${s}</li>`).join("")}
+                    </ol>
+
+                    ${c.contraindications && c.contraindications.length > 0 ? `
+                        <div class="nutra-cautions-box">
+                            <strong>Lưu ý kỵ:</strong> ${c.contraindications.join(" • ")}
+                        </div>
+                    ` : ""}
+                </article>
+            `;
+        }).join("");
+    }
+
+    // Sự kiện tìm kiếm trên Tab Dược Thiện
+    const nutraSearchBtn = document.getElementById("nutraSearchBtn");
+    const nutraSearchInput = document.getElementById("nutraSearchInput");
+    const nutraCategoryFilter = document.getElementById("nutraCategoryFilter");
+
+    if (nutraSearchBtn && nutraSearchInput) {
+        nutraSearchBtn.addEventListener("click", () => {
+            executeNutraSearch(nutraSearchInput.value, null, nutraCategoryFilter.value);
+        });
+        nutraSearchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                executeNutraSearch(nutraSearchInput.value, null, nutraCategoryFilter.value);
+            }
+        });
+    }
+
+    if (nutraCategoryFilter) {
+        nutraCategoryFilter.addEventListener("change", () => {
+            executeNutraSearch(nutraSearchInput.value, null, nutraCategoryFilter.value);
+        });
+    }
 });
+

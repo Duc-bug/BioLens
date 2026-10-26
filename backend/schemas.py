@@ -53,3 +53,18 @@ class IdentifyResponseSchema(BaseModel):
     topMatch: Optional[Dict[str, Any]] = None
     candidates: List[Dict[str, Any]] = []
     algorithmComparison: Dict[str, Any] = {}
+    nutraceutical: Optional[Dict[str, Any]] = None
+
+
+class NutraceuticalRecommendRequest(BaseModel):
+    speciesKey: str
+    healthGoal: Optional[str] = None
+    userConstitution: Optional[str] = None
+
+
+class NutraceuticalSymptomSearchRequest(BaseModel):
+    query: str
+    userConstitution: Optional[str] = None
+    gradeFilter: Optional[str] = None
+    topK: int = 8
+

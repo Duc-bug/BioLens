@@ -27,10 +27,13 @@ from configs.settings import (
     WORD_REPORT_PATH,
 )
 from models.inference_engine import BioLensInferenceEngine
+from backend.nutraceutical_engine import NutraceuticalEngine
+from backend.schemas import NutraceuticalRecommendRequest, NutraceuticalSymptomSearchRequest
 
 router = APIRouter(prefix="/api", tags=["BioLens API"])
 
 _engine: Optional[BioLensInferenceEngine] = None
+_nutra_engine: Optional[NutraceuticalEngine] = None
 
 
 def get_engine() -> BioLensInferenceEngine:
@@ -38,6 +41,13 @@ def get_engine() -> BioLensInferenceEngine:
     if _engine is None:
         _engine = BioLensInferenceEngine()
     return _engine
+
+
+def get_nutra_engine() -> NutraceuticalEngine:
+    global _nutra_engine
+    if _nutra_engine is None:
+        _nutra_engine = NutraceuticalEngine()
+    return _nutra_engine
 
 
 @router.post("/identify")
@@ -60,6 +70,16 @@ async def identify_uploaded_image(
         organ_hint=organ,
         top_k=5,
     )
+
+    if result.get("isAccepted") and result.get("topMatch"):
+        sp_key = result["topMatch"].get("speciesKey")
+        if sp_key:
+            try:
+                nutra = get_nutra_engine()
+                result["nutraceutical"] = nutra.recommend_for_species(str(sp_key))
+            except Exception as nutra_err:
+                print(f"⚠️ [NutraInference] Lỗi lấy thông tin ẩm thực: {nutra_err}")
+
     return result
 
 
@@ -110,10 +130,24 @@ async def identify_demo_specimen(
 
     sp_entry = engine.species_map[chosen_key]
     sample_paths = sp_entry.get("sampleImagePaths", [])
-    if not sample_paths:
-        raise HTTPException(status_code=404, detail="Không tìm thấy ảnh mẫu cho loài này.")
+    valid_paths = [p for p in sample_paths if (DATASET_ROOT / p).exists()]
+    if not valid_paths:
+        sp_dir = DATASET_ROOT / chosen_key
+        if sp_dir.is_dir():
+            valid_paths = [
+                f"{chosen_key}/{fn}"
+                for fn in os.listdir(sp_dir)
+                if not fn.startswith(".")
+                and not fn.startswith("._")
+                and Path(fn).suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+            ]
+    if not valid_paths:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Không tìm thấy file ảnh thực tế của loài {chosen_key} trong thư mục: {DATASET_ROOT / chosen_key}",
+        )
 
-    chosen_rel = random.choice(sample_paths)
+    chosen_rel = random.choice(valid_paths)
     full_img_path = DATASET_ROOT / chosen_rel
     with Image.open(full_img_path) as im:
         pil_copy = im.copy()
@@ -182,12 +216,7 @@ async def list_and_search_species(
     formatted_items = []
     for it in slice_items:
         samples = it.get("sampleImagePaths", [])
-        s_key = it.get("speciesKey", "")
-        thumb_url = None
-        if samples and (DATASET_ROOT / samples[0]).exists():
-            thumb_url = f"/api/image/{samples[0]}"
-        elif (DATASET_ROOT / "samples_thumb" / f"{s_key}.jpg").exists():
-            thumb_url = f"/api/image/samples_thumb/{s_key}.jpg"
+        thumb_url = f"/api/image/{samples[0]}" if samples else None
         formatted_items.append(
             {
                 **it,
@@ -216,8 +245,8 @@ async def get_species_full_profile(species_key: str):
 
 @router.get("/image/{species_key}/{filename}")
 async def serve_dataset_specimen_image(species_key: str, filename: str):
-    """Phục vụ ảnh gốc từ thư mục dữ liệu hoặc thư mục ảnh đại diện samples_thumb."""
-    if not (species_key.isdigit() or species_key == "samples_thumb") or ".." in filename or "/" in filename or "\\" in filename:
+    """Phục vụ ảnh gốc từ thư mục dữ liệu E:\\VietMediSpecies2026\\<species_key>\\<filename>."""
+    if not species_key.isdigit() or ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Đường dẫn ảnh không hợp lệ.")
     img_path = DATASET_ROOT / species_key / filename
     if not img_path.exists() or not img_path.is_file():
@@ -301,3 +330,50 @@ async def download_word_report_v1():
         filename="Bao_Cao_Do_An_BioLens_Phan_1_Baseline.docx",
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
+
+
+# ==============================================================================
+# NUTRACEUTICAL & FUNCTIONAL DIET RECOMMENDER ENDPOINTS
+# ==============================================================================
+
+@router.post("/nutraceutical/recommend")
+async def recommend_nutraceutical_for_species(req: NutraceuticalRecommendRequest):
+    """Gợi ý món ăn, trà thảo mộc hoặc cảnh báo độc tính theo mã loài GBIF."""
+    nutra = get_nutra_engine()
+    res = nutra.recommend_for_species(
+        species_key=req.speciesKey,
+        health_goal=req.healthGoal,
+        user_constitution=req.userConstitution,
+    )
+    return res
+
+
+@router.post("/nutraceutical/search")
+async def search_nutraceutical_by_symptom(req: NutraceuticalSymptomSearchRequest):
+    """Tìm kiếm món ăn dưỡng sinh & trà theo triệu chứng hoặc thể trạng người dùng."""
+    nutra = get_nutra_engine()
+    results = nutra.search_by_symptom(
+        query=req.query,
+        user_constitution=req.userConstitution,
+        grade_filter=req.gradeFilter,
+        top_k=req.topK,
+    )
+    return {"query": req.query, "totalResults": len(results), "candidates": results}
+
+
+@router.get("/nutraceutical/metadata")
+async def get_nutraceutical_metadata():
+    """Lấy danh mục 12 thể trạng sức khỏe và nhóm ẩm thực để hiển thị trên UI."""
+    nutra = get_nutra_engine()
+    return nutra.get_categories_metadata()
+
+
+@router.get("/nutraceutical/profile/{species_key}")
+async def get_nutraceutical_profile(species_key: str):
+    """Lấy hồ sơ an toàn ẩm thực và công thức của 1 loài cụ thể."""
+    nutra = get_nutra_engine()
+    profile = nutra.get_profile(species_key)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Không tìm thấy hồ sơ ẩm thực cho loài này.")
+    return profile
+

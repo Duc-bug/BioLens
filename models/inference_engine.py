@@ -274,12 +274,10 @@ class BioLensInferenceEngine:
                     sections["overview"] = wiki_text
                     sections["hasWikiExtract"] = True
 
-        sample_urls = []
-        for rel_path in cat_item.get("sampleImagePaths", [])[:6]:
-            if (DATASET_ROOT / rel_path).exists():
-                sample_urls.append(f"/api/image/{rel_path}")
-        if not sample_urls and (DATASET_ROOT / "samples_thumb" / f"{species_key}.jpg").exists():
-            sample_urls.append(f"/api/image/samples_thumb/{species_key}.jpg")
+        sample_urls = [
+            f"/api/image/{rel_path}"
+            for rel_path in cat_item.get("sampleImagePaths", [])[:6]
+        ]
 
         return {
             "speciesKey": species_key,

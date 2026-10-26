@@ -8,17 +8,52 @@ import os
 from pathlib import Path
 import torch
 
-# duong dan den thu muc chua code va thu muc chua anh dataset
+# Duong dan den thu muc BioLens
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_DATASET_ROOT = PROJECT_ROOT.parent
+
+# Tu dong nap bien moi truong tu file .env neu co
+try:
+    from dotenv import load_dotenv
+
+    for _env_path in [
+        PROJECT_ROOT / ".env",
+        PROJECT_ROOT.parent / ".env",
+    ]:
+        if _env_path.exists():
+            load_dotenv(_env_path)
+            break
+except Exception:
+    pass
+
+# Duong dan mac dinh: uu tien e:/VietMediSpecies2026/dataset neu ton tai
+DEFAULT_DATASET_ROOT = (
+    PROJECT_ROOT.parent / "dataset"
+    if (PROJECT_ROOT.parent / "dataset").is_dir()
+    else PROJECT_ROOT.parent
+)
 
 DATASET_ROOT = Path(os.getenv("BIOLENS_DATASET_ROOT", str(DEFAULT_DATASET_ROOT)))
-METADATA_CSV_PATH = Path(
-    os.getenv(
-        "BIOLENS_METADATA_CSV",
-        str(DATASET_ROOT.parent / "VietMediSpecies2026_metadata_dataset.csv"),
-    )
-)
+
+
+def _resolve_metadata_path() -> Path:
+    env_val = os.getenv("BIOLENS_METADATA_CSV")
+    if env_val:
+        p = Path(env_val)
+        if p.exists():
+            return p
+    candidates = [
+        DATASET_ROOT / "VietMediSpecies2026_metadata_dataset.csv",
+        DATASET_ROOT.parent / "VietMediSpecies2026_metadata_dataset.csv",
+        Path("E:/VietMediSpecies2026_metadata_dataset.csv"),
+        PROJECT_ROOT.parent.parent / "VietMediSpecies2026_metadata_dataset.csv",
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    return DATASET_ROOT / "VietMediSpecies2026_metadata_dataset.csv"
+
+
+METADATA_CSV_PATH = _resolve_metadata_path()
 
 STORAGE_DIR = Path(os.getenv("BIOLENS_STORAGE_DIR", str(PROJECT_ROOT / "storage")))
 CATALOG_DIR = STORAGE_DIR / "catalog"
@@ -77,7 +112,10 @@ IMAGE_SIZE = int(os.getenv("BIOLENS_IMAGE_SIZE", "224"))
 BATCH_SIZE = int(os.getenv("BIOLENS_BATCH_SIZE", "256"))
 NUM_WORKERS = int(os.getenv("BIOLENS_NUM_WORKERS", "4"))
 
-MAX_IMAGES_PER_SPECIES = None
+_max_imgs_env = os.getenv("BIOLENS_MAX_IMAGES_PER_SPECIES", "").strip()
+MAX_IMAGES_PER_SPECIES = (
+    int(_max_imgs_env) if _max_imgs_env and _max_imgs_env != "0" else None
+)
 RANDOM_SEED = 42
 
 TRAIN_RATIO = 0.80

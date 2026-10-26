@@ -13,9 +13,9 @@
 
 ---
 
-## 📌 1. Tổng quan Dự án & Ba Mục tiêu Cốt lõi
+## 📌 1. Tổng quan Dự án & Bốn Mục tiêu Cốt lõi
 
-**BioLens Vietnam** là hệ thống nhận diện quang học và tra cứu bách khoa thực vật/dược liệu Việt Nam đầu-cuối (End-to-End), giải quyết đồng thời 3 bài toán thực tiễn:
+**BioLens Vietnam** là hệ thống nhận diện quang học và tra cứu bách khoa thực vật/dược liệu Việt Nam đầu-cuối (End-to-End), giải quyết đồng thời 4 bài toán thực tiễn:
 
 1. **Định danh chính xác trên quy mô lớn (Extreme-Scale 3,570 Species Classification)**:
    - Trích xuất đặc trưng hình thái sâu 960 chiều từ `MobileNetV3-Large` (`IMAGENET1K_V2`, tăng tốc GPU CUDA `FP16`) trên **100% bộ dữ liệu (310,647 ảnh)**.
@@ -26,6 +26,9 @@
    - Cung cấp 7 mục chuyên sâu: *(1) Giới thiệu tổng quan, (2) Đặc điểm Hoa & Cụm hoa, (3) Đặc điểm Lá - Thân - Quả/Rễ, (4) Phân bố & Sinh thái tại Việt Nam, (5) Bộ phận dùng & Công dụng dược liệu, (6) Hoạt chất sinh học & Tính vị — Quy kinh Đông y, (7) Lưu ý an toàn & Độc tính*.
 3. **Từ chối Nhận diện khi chụp Vật thể Lạ (2-Stage Open-Set OOD Rejection)**:
    - Khi người dùng đưa ảnh chụp con người, bàn ghế, màn hình máy tính, phương tiện giao thông, thú cưng hoặc ảnh bị mờ/tối đen, **Bộ lọc OOD 2 Tầng** tự động từ chối (`ROC-AUC = 0.9999`, tỉ lệ chặn ảnh lạ `100.0%`).
+4. **Gợi ý Dược Thiện & Trà Dưỡng Sinh Có Ràng Buộc An Toàn (Safe-Constrained Nutraceutical Recommender)**:
+   - Áp dụng triết lý **Dược thực đồng nguyên (Medicine and Food Homology - MFH)** bao phủ toàn bộ 3,570 loài thực vật dược liệu Việt Nam.
+   - Tự động chặn **100.0% nguy cơ ngộ độc** đối với 179 loài thảo mộc kịch độc; cung cấp công thức chế biến định lượng gram cho **2,074 loài** làm canh tiềm bồi bổ, cháo dưỡng sinh và trà thảo mộc theo **12 thể trạng sức khỏe Đông y** và kiểm soát cấm kỵ ẩm thực (Xem báo cáo chuyên sâu: [`docs/NUTRACEUTICAL_RECOMMENDER_SYSTEM_REPORT.md`](file:///e:/VietMediSpecies2026/BioLens/docs/NUTRACEUTICAL_RECOMMENDER_SYSTEM_REPORT.md)).
 
 ---
 
@@ -45,13 +48,14 @@
 Sau khi tải về và giải nén, bạn có thể đặt thư mục mã nguồn `BioLens` nằm ngay bên trong thư mục chứa dữ liệu (hoặc đặt ở bất kỳ đâu và trỏ đường dẫn trong file `.env`):
 
 ```text
-E:/VietMediSpecies2026/                         <-- Thư mục gốc chứa Dataset (BIOLENS_DATASET_ROOT)
-├── VietMediSpecies2026_metadata_dataset.csv    <-- File Metadata 4,799 bản ghi GBIF (BIOLENS_METADATA_CSV)
-├── 3940600/                                    <-- Thư mục ảnh loài Sâm bố chính (Abelmoschus sagittifolius)
-│   ├── 0001.jpg
-│   └── ...
-├── 2882449/                                    <-- Thư mục ảnh loài Sen hồng (Nelumbo nucifera)
-├── ...                                         <-- Toàn bộ 3,570 thư mục loài (310,647 ảnh)
+E:/VietMediSpecies2026/
+├── dataset/                                    <-- Thư mục chứa Dataset (BIOLENS_DATASET_ROOT)
+│   ├── VietMediSpecies2026_metadata_dataset.csv<-- File Metadata 4,799 bản ghi GBIF (BIOLENS_METADATA_CSV)
+│   ├── 3940600/                                <-- Thư mục ảnh loài Sâm bố chính (Abelmoschus sagittifolius)
+│   │   ├── 0001.jpg
+│   │   └── ...
+│   ├── 2882449/                                <-- Thư mục ảnh loài Sen hồng (Nelumbo nucifera)
+│   └── ...                                     <-- Toàn bộ 3,570 thư mục loài (310,647 ảnh)
 └── BioLens/                                    <-- Thư mục mã nguồn Repository này
     ├── configs/
     ├── dataset/
@@ -90,8 +94,8 @@ cp .env.example .env
 
 Mở file `.env` vừa tạo để kiểm tra đường dẫn dữ liệu của bạn:
 ```ini
-BIOLENS_DATASET_ROOT=E:/VietMediSpecies2026
-BIOLENS_METADATA_CSV=E:/VietMediSpecies2026_metadata_dataset.csv
+BIOLENS_DATASET_ROOT=E:/VietMediSpecies2026/dataset
+BIOLENS_METADATA_CSV=E:/VietMediSpecies2026/dataset/VietMediSpecies2026_metadata_dataset.csv
 BIOLENS_STORAGE_DIR=E:/VietMediSpecies2026/BioLens/storage
 # Đặt 0 để huấn luyện trên toàn bộ 100% dữ liệu (310,647 ảnh)
 BIOLENS_MAX_IMAGES_PER_SPECIES=0
