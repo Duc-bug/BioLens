@@ -1101,7 +1101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Trường hợp 2: Dược thực đồng nguyên / Trà thảo mộc an toàn
         badge.className = "nutra-status-badge nutra-status-safe";
-        badge.textContent = nutra.edibilityGrade === "CULINARY_TONIC" ? "🍲 Dược Thực Đồng Nguyên (Canh/Cháo)" : "🍵 Trà Thảo Mộc Dưỡng Sinh";
+        badge.textContent = nutra.edibilityGrade === "CULINARY_TONIC" ? "🍲 Nấu Canh / Cháo Bổ" : "🍵 Pha Trà Thảo Mộc";
 
         const recipes = nutra.recipes || [];
         const contra = nutra.contraindications || [];
@@ -1189,9 +1189,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById("nutraHealthChipsContainer");
         if (!container) return;
 
-        container.innerHTML = goals.map(g => `
-            <button type="button" class="nutra-chip ${selectedNutraGoal === g.id ? 'active' : ''}" data-goal-id="${g.id}">
-                ${g.name}
+        // Chỉ chọn lọc 6 nhu cầu sức khỏe thiết yếu, phổ biến nhất trong đời sống
+        const PRIMARY_PRACTICAL_GOALS = [
+            { id: "an_than_ngu_ngon", label: "😴 Mất Ngủ, Khó Ngủ", query: "trị mất ngủ khó ngủ" },
+            { id: "thanh_nhiet_giai_doc", label: "🧊 Thanh Nhiệt, Mát Gan", query: "thanh nhiệt mát gan" },
+            { id: "bo_khi_duong_huyet", label: "💪 Bồi Bổ Sau Ốm, Mệt Mỏi", query: "bồi bổ khí huyết mệt mỏi" },
+            { id: "nhuan_phe_tri_ho", label: "🫁 Trị Ho Khan, Rát Họng", query: "trị ho khan rát họng" },
+            { id: "kien_ty_tieu_hoa", label: "🫖 Đầy Bụng, Tiêu Hóa Kém", query: "đầy bụng tiêu hóa kém" },
+            { id: "khu_phong_xuong_khop", label: "🦴 Đau Nhức Xương Khớp", query: "đau nhức xương khớp" },
+        ];
+
+        container.innerHTML = PRIMARY_PRACTICAL_GOALS.map(g => `
+            <button type="button" class="nutra-chip ${selectedNutraGoal === g.id ? 'active' : ''}" data-goal-id="${g.id}" data-search-query="${g.query}">
+                ${g.label}
             </button>
         `).join("");
 
@@ -1200,13 +1210,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.querySelectorAll(".nutra-chip").forEach(c => c.classList.remove("active"));
                 if (selectedNutraGoal === chip.dataset.goalId) {
                     selectedNutraGoal = "";
+                    document.getElementById("nutraSearchInput").value = "";
+                    executeNutraSearch("bồi bổ", null, document.getElementById("nutraCategoryFilter").value);
                 } else {
                     chip.classList.add("active");
                     selectedNutraGoal = chip.dataset.goalId;
+                    const queryText = chip.dataset.searchQuery;
+                    document.getElementById("nutraSearchInput").value = queryText;
+                    executeNutraSearch(queryText, null, document.getElementById("nutraCategoryFilter").value);
                 }
-                const queryText = selectedNutraGoal ? chip.textContent.trim() : "dưỡng sinh";
-                document.getElementById("nutraSearchInput").value = queryText;
-                executeNutraSearch(queryText, null, document.getElementById("nutraCategoryFilter").value);
             });
         });
     }
