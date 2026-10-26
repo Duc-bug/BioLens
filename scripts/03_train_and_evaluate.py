@@ -1,6 +1,3 @@
-"""
-Bước 3: Huấn luyện & Tinh chỉnh Chuyên sâu (Phase 2 Fine-Tuning) 4 thuật toán Học máy trên 3,570 loài (CUDA).
-"""
 import sys
 import numpy as np
 from pathlib import Path

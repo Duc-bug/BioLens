@@ -1,6 +1,3 @@
-"""
-Bước 2: Trích xuất đặc trưng sâu (Deep Feature Extraction) trên GPU cho toàn bộ 3,570 loài.
-"""
 import sys
 from pathlib import Path
 

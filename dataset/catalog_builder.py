@@ -1,7 +1,3 @@
-"""
-Doc file csv metadata va quet cac thu muc anh de tao danh muc 3,570 loai.
-Loc bo folder rac __MACOSX va chia tap train / val / test theo ti le 80 / 10 / 10.
-"""
 from __future__ import annotations
 
 import csv

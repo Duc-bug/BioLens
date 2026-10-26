@@ -1,11 +1,3 @@
-"""
-Code huan luyen va danh gia 4 mo hinh hoc may tren tap vector 960 chieu:
-1. Cosine Prototype (phan loai theo tam cua tung loai)
-2. Weighted Cosine k-NN (k=19 lang gieng gan nhat)
-3. Multi-class Linear SVM (dung ham loss Crammer-Singer Hinge)
-4. Class-Balanced Cosine MLP (mang no-ron co them Dropout chong hoc vet)
-Ket hop 4 mo hinh thanh Ensemble va luu ket qua so sanh Phan 1 vs Phan 2.
-"""
 from __future__ import annotations
 
 import json

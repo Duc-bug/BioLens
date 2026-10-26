@@ -1,10 +1,3 @@
-"""
-Bước 5: Thu thập & Làm giàu Tri thức Thực vật - Dược liệu Đa nguồn (Multi-Source Botanical Knowledge Harvester).
-- Tiền truy vấn đa luồng (Multi-threaded Pre-fetching) tóm tắt bách khoa từ Wikipedia Tiếng Việt (vi.wikipedia.org)
-  cho các loài có tần suất xuất hiện cao và có tên tiếng Việt dược liệu.
-- Lưu trữ bền vững vào storage/catalog/wiki_cache.json và tái tạo toàn bộ 3,570 hồ sơ loài
-  trong storage/catalog/species_knowledge.json (kèm hoạt chất sinh học, tính vị Đông y và nguồn dữ liệu xác thực).
-"""
 from __future__ import annotations
 
 import csv

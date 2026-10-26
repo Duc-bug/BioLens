@@ -1,10 +1,3 @@
-/**
- * File js chinh xu ly su kien tren giao dien web:
- * - Chon anh / keo tha anh / chup tu camera va goi API nhan dien
- * - Tim kiem va phan trang danh muc 3,570 loai cay
- * - Hien thi bang ket qua thuc nghiem va bieu do
- */
-
 document.addEventListener("DOMContentLoaded", () => {
     // Cau hinh Backend API Endpoint
     const REMOTE_API_BASE = "https://nine-desire-resolution-neither.trycloudflare.com";

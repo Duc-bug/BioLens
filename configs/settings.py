@@ -1,7 +1,3 @@
-"""
-File cau hinh chung cho project BioLens.
-Luu duong dan den thu muc dataset, file csv metadata va cac tham so train mo hinh.
-"""
 from __future__ import annotations
 
 import os

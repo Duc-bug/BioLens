@@ -1,7 +1,3 @@
-"""
-Trich xuat vector dac trung 960 chieu tu anh bang mang MobileNetV3-Large tren GPU.
-Dung float16 (FP16) de chay nhanh hon va tiet kiem dung luong file .npy.
-"""
 from __future__ import annotations
 
 import json

@@ -1,9 +1,3 @@
-"""
-Tong hop thong tin chi tiet cho tung loai cay thuoc / thuc vat:
-- Ghep thong tin phan loai tu file CSV GBIF
-- Lay dac diem hinh thai, hoat chat va cong dung tu herbal_knowledge.py
-- Goi API Wikipedia Tieng Viet de lay tom tat va luu cache vao wiki_cache.json
-"""
 from __future__ import annotations
 
 import json

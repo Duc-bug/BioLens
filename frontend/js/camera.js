@@ -1,6 +1,3 @@
-/**
- * Xu ly mo webcam tren trinh duyet hoac camera dien thoai de chup anh.
- */
 class BioLensCamera {
     constructor(videoEl, canvasEl, onPhotoCaptured) {
         this.videoEl = videoEl;

@@ -1,8 +1,3 @@
-"""
-Bo loc kiem tra anh dau vao (2-Stage OOD Filter):
-- Kiem tra anh co bi mo, qua toi hoac qua loa khong (dung Laplacian variance)
-- Kiem tra xem anh chup co phai la hoa/cay/nam that khong, neu chup nguoi/do vat/dong vat thi tu choi nhan dien
-"""
 from __future__ import annotations
 
 import json

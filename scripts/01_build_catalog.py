@@ -1,6 +1,3 @@
-"""
-Bước 1: Khởi tạo danh mục 3,570 loài từ VietMediSpecies2026 và xây dựng Kho Tri thức Tiếng Việt.
-"""
 import sys
 import time
 from pathlib import Path

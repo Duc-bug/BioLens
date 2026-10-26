@@ -1,7 +1,3 @@
-"""
-Load cac mo hinh da train len GPU de suy luan khi nguoi dung up anh len web.
-Ket hop bo loc OOD + 4 thuat toan ML + tra ve thong tin chi tiet cua loai cay.
-"""
 from __future__ import annotations
 
 import json

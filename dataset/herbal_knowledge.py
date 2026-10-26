@@ -1,13 +1,3 @@
-"""
-Cơ sở tri thức Thực vật học & Dược liệu Việt Nam Mở rộng (Comprehensive Vietnamese Botanical & Medicinal Knowledge Base).
-Bao phủ hơn 60 Họ thực vật & nấm dược liệu lớn nhất Việt Nam + Chuyên khảo Chi/Loài tiêu biểu:
-- Tên tiếng Việt của các Giới (Kingdom), Lớp (Class), Bộ (Order), Họ thực vật/nấm (Family)
-- Đặc điểm hình thái nhận biết chuyên sâu (Hoa & Cụm hoa, Lá, Thân, Quả/Rễ)
-- Phân bố sinh thái tại Việt Nam
-- Nhóm hoạt chất sinh học chính (Active Compounds) & Tính vị Đông y (Traditional Properties)
-- Bộ phận dùng, Công dụng Y học cổ truyền / Đời sống
-- Cảnh báo an toàn & độc tính (Safety Warnings)
-"""
 from typing import Dict, Any
 
 KINGDOM_VN_MAP: Dict[str, str] = {

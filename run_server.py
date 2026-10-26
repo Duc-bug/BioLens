@@ -1,6 +1,3 @@
-"""
-Khởi chạy nhanh Server ứng dụng Web BioLens tại http://127.0.0.1:8000
-"""
 import sys
 from pathlib import Path
 import uvicorn

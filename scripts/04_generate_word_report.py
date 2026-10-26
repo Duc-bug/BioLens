@@ -1,11 +1,3 @@
-"""
-Bước 4: Xuất Báo cáo Đồ án Môn Học máy và Ứng dụng Đầy đủ Chi tiết ra File Word (.docx)
-kèm TRỌN BỘ 11 BIỂU ĐỒ KHOA HỌC (300 DPI) và cấu trúc rõ ràng thành:
-- PHẦN 1: XÂY DỰNG HỆ THỐNG CƠ SỞ & ĐÁNH GIÁ MÔ HÌNH BASELINE (v1)
-- PHẦN 2: TINH CHỈNH CHUYÊN SÂU MÔ HÌNH HIỆN CÓ (FINE-TUNING v2) & ĐỐI SÁNH ABLATION STUDY
-Lưu giữ nguyên vẹn bản báo cáo cũ Phần 1 (Bao_Cao_Do_An_BioLens_Phan_1_Baseline.docx)
-và xuất bản đầy đủ mới ra Bao_Cao_Do_An_BioLens_Phan_2_Finetuned_Day_Du.docx & Bao_Cao_Do_An_BioLens_Hoc_May_Va_Ung_Dung.docx.
-"""
 from __future__ import annotations
 
 import json
