@@ -1,8 +1,3 @@
-"""
-Script Quet & Xay dung Co so Tri thuc Duoc thien (Nutraceutical Registry)
-cho toan bo 3,570 loai thuc vat duoc lieu VietMediSpecies2026.
-Phan lop an toan am thuc va khoi tao bo cong thuc duong sinh chuyen sau.
-"""
 from __future__ import annotations
 
 import io

@@ -1,8 +1,3 @@
-"""
-Tu dien Quy tac & Danh muc Tri thuc Duoc thien (Medicine and Food Homology - MFH)
-Phuc vu cho Engine Goi y Mon an - Thuc uong Bo duong (BioLens Nutraceutical Recommender).
-Bao phu toan bo 3,570 loai thuc vat duoc lieu VietMediSpecies2026.
-"""
 from __future__ import annotations
 
 from typing import Dict, List, Any, Set

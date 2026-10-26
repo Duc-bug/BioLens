@@ -1,9 +1,3 @@
-"""
-Cac route API cua he thong:
-- POST /api/identify: nhan anh tu giao dien web va tra ve ket qua nhan dien
-- GET /api/species: tim kiem va loc danh sach 3,570 loai cay
-- GET /api/benchmarks: lay bang ket qua thuc nghiem va bieu do
-"""
 from __future__ import annotations
 
 import io

@@ -1,6 +1,3 @@
-"""
-Khoi tao server FastAPI va mount thu muc giao dien frontend.
-"""
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,8 +1,3 @@
-"""
-Engine Goi y Mon an - Thuc uong Bo duong (Nutraceutical & Functional Diet Recommender)
-Tich hop trong he thong BioLens / BioLens-X.
-Xu ly da muc tieu: An toan thuc pham, Cong nang duong sinh, Tuong thich am thuc va Ca nhan hoa the trang.
-"""
 from __future__ import annotations
 
 import json

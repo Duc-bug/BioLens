@@ -1,6 +1,3 @@
-"""
-Định nghĩa Schema dữ liệu cho REST API của BioLens (Pydantic Schemas).
-"""
 from __future__ import annotations
 
 from typing import Dict, Any, List, Optional
