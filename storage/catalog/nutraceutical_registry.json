@@ -31209,17 +31209,42 @@
     "scientificName": "Telosma cordata (Burm.fil.) Merr.",
     "family": "Apocynaceae",
     "genus": "Telosma",
-    "edibilityGrade": "TOXIC_FORBIDDEN",
-    "gradeDescription": "Tuyệt đối không dùng trong ẩm thực hoặc đồ uống (Nguy cơ ngộ độc).",
-    "isToxic": true,
-    "toxicAlertReason": "Thuộc Họ Trúc đào (Apocynaceae) chứa glycoside tim có nguy cơ ngộ độc cao.",
+    "edibilityGrade": "CULINARY_TONIC",
+    "gradeDescription": "Rau hoa ẩm thực dưỡng sinh quý — Hoa thiên lý vị ngọt tính bình, an thần ngủ ngon, thanh nhiệt mát gan, bổ tỳ vị.",
+    "isToxic": false,
+    "toxicAlertReason": "",
     "matchedHealthGoals": [
-      "an_than_ngu_ngon"
+      "an_than_ngu_ngon",
+      "thanh_nhiet_giai_doc"
     ],
-    "recipesCount": 0,
-    "recipes": [],
+    "recipesCount": 1,
+    "recipes": [
+      {
+        "recipe_id": "rec_canh_hoa_thien_ly_thit_bam",
+        "title": "Canh Hoa Thiên Lý Nấu Thịt Nạc Băm An Thần Dịu Giấc Ngủ",
+        "category": "Canh dưỡng tâm an thần",
+        "preparation_time": "15 phút",
+        "target_benefit": "Dưỡng tâm an thần, giải nhiệt, hỗ trợ ngủ ngon giấc, giảm mệt mỏi căng thẳng thần kinh sau ngày làm việc.",
+        "ingredients": [
+          "Hoa thiên lý tươi: 150g (nhặt bỏ cuống già, rửa sạch nhẹ tay)",
+          "Thịt nạc heo băm nhuyễn: 100g",
+          "Hành tím băm: 1 củ",
+          "Gia vị: Muối, nước mắm ngon, tiêu thơm",
+          "Nước sạch: 700 ml"
+        ],
+        "step_by_step": [
+          "Bước 1: Hoa thiên lý ngâm nước muối loãng 5 phút, rửa sạch nhẹ tay tránh nát cánh hoa, để ráo nước.",
+          "Bước 2: Thịt nạc ướp chút gia vị và hành tím băm trong 5 phút.",
+          "Bước 3: Đun sôi 700ml nước, dùng thìa viên từng viên thịt băm thả vào nồi nước sôi, hớt bọt cho nước trong.",
+          "Bước 4: Thả hoa thiên lý vào, đun sôi bùng lại 1 phút cho hoa vừa chín tới giữ màu xanh và độ ngọt giòn.",
+          "Bước 5: Nêm chút nước mắm thơm vừa ăn rồi tắt bếp ngay. Múc canh ra tô dùng nóng trong bữa cơm tối."
+        ],
+        "optimal_timing": "Ăn vào bữa cơm tối cách giờ đi ngủ 1–2 tiếng giúp ngủ rất ngon và sâu giấc.",
+        "cautions": "Hoa thiên lý rất nhanh chín, không đun sôi lâu làm hoa bị nát nhừ mất chất."
+      }
+    ],
     "contraindications": [],
-    "traditionalProperties": "Vị đắng, tính hàn hoặc bình; quy kinh Can, Tâm.",
+    "traditionalProperties": "Vị ngọt, tính bình; quy kinh Tâm, Can, Tỳ. Có tác dụng an thần, giải nhiệt, bồi bổ tỳ vị, làm sáng mắt, giúp ngủ sâu giấc.",
     "partsUsed": "Dây và lá (Dây thìa canh, Dừa cạn), rễ (Ba gạc) hoặc vỏ thân (Mức hoa trắng)."
   },
   "3572076": {
@@ -54438,17 +54463,71 @@
     "scientificName": "Urceola rosea (Hook. & Arn.) D.J.Middleton",
     "family": "Apocynaceae",
     "genus": "Urceola",
-    "edibilityGrade": "TOXIC_FORBIDDEN",
-    "gradeDescription": "Tuyệt đối không dùng trong ẩm thực hoặc đồ uống (Nguy cơ ngộ độc).",
-    "isToxic": true,
-    "toxicAlertReason": "Thuộc Họ Trúc đào (Apocynaceae) chứa glycoside tim có nguy cơ ngộ độc cao.",
+    "edibilityGrade": "CULINARY_TONIC",
+    "gradeDescription": "Rau ăn & Dược liệu thanh nhiệt kinh điển — Vị chua thanh tự nhiên, dùng nấu lẩu gà lá giang, canh chua cá giải nhiệt tỳ vị.",
+    "isToxic": false,
+    "toxicAlertReason": "",
     "matchedHealthGoals": [
-      "an_than_ngu_ngon"
+      "thanh_nhiet_giai_doc",
+      "kien_ty_tieu_hoa"
     ],
-    "recipesCount": 0,
-    "recipes": [],
-    "contraindications": [],
-    "traditionalProperties": "Vị đắng, tính hàn hoặc bình; quy kinh Can, Tâm.",
+    "recipesCount": 2,
+    "recipes": [
+      {
+        "recipe_id": "rec_lau_ga_la_giang",
+        "title": "Lẩu Gà Nấu Lá Giang Chua Thanh Giải Nhiệt Nam Bộ",
+        "category": "Canh & Lẩu dưỡng sinh giải nhiệt",
+        "preparation_time": "35 phút",
+        "target_benefit": "Thanh nhiệt giải độc, tiêu thực kích thích vị giác, bồi bổ thể lực, giải trừ háo khát ngày nắng nóng.",
+        "ingredients": [
+          "Thịt gà ta thả vườn: 800g–1kg (chặt miếng vừa ăn)",
+          "Lá giang tươi: 150g (rửa sạch, vò nhẹ cho hơi dập)",
+          "Sả cây: 3 nhánh đập giập",
+          "Ớt sừng: 1 quả thái lát",
+          "Hành tỏi băm, ngò gai, rau ngổ",
+          "Gia vị: Nước mắm ngon, muối, đường phèn, hạt nêm",
+          "Ăn kèm: Bún tươi, rau muống chẻ, hoa chuối"
+        ],
+        "step_by_step": [
+          "Bước 1: Thịt gà xát muối rửa sạch, chặt miếng vừa ăn, ướp với chút hành tỏi băm, 1 thìa nước mắm, tiêu trong 15 phút.",
+          "Bước 2: Lá giang nhặt lấy lá non và bánh tẻ, ngâm nước muối loãng 5 phút, rửa sạch vớt ráo. Dùng tay vò nhẹ cho dập lá để giải phóng vị chua tự nhiên.",
+          "Bước 3: Phi thơm hành tỏi và sả đập giập trong nồi, cho thịt gà vào xào săn thơm trên lửa lớn.",
+          "Bước 4: Rót 1.5 lít nước vào đun sôi bùng, hớt sạch bọt rồi hạ lửa nhỏ ninh 15–20 phút cho gà chín mềm ngọt nước.",
+          "Bước 5: Thả lá giang đã vò dập vào nồi nước lẩu, nêm thêm chút đường phèn và nước mắm cho vị chua ngọt dịu cân bằng.",
+          "Bước 6: Rắc ngò gai, ớt lát lên trên. Dùng nóng cùng bún tươi và rau ghém."
+        ],
+        "optimal_timing": "Dùng trong bữa trưa hoặc tối, đặc biệt vào mùa hè hoặc khi cơ thể cảm thấy háo khát chán ăn.",
+        "cautions": "Nên vò dập nhẹ lá trước khi thả vào nồi nước sôi. Không nấu hoặc om trong nồi nhôm trần quá lâu."
+      },
+      {
+        "recipe_id": "rec_canh_chua_ca_la_giang",
+        "title": "Canh Chua Cá Lóc Nấu Lá Giang Thanh Mát Tiêu Độc",
+        "category": "Canh dưỡng sinh thanh nhiệt mát gan",
+        "preparation_time": "25 phút",
+        "target_benefit": "Thanh nhiệt, giải độc gan, tiêu thực, giải khát, khử tanh thịt cá bằng acid hữu cơ tự nhiên lành tính.",
+        "ingredients": [
+          "Cá lóc đồng làm sạch: 400g (cắt khúc 3cm)",
+          "Lá giang tươi bánh tẻ: 100g (vò dập nhẹ)",
+          "Cà chua chín: 1 quả bổ múi cau",
+          "Hành hoa, ngò gai thái nhỏ",
+          "Gia vị: Nước mắm, muối, ớt hiểm"
+        ],
+        "step_by_step": [
+          "Bước 1: Cá lóc xát muối và nước cốt chanh khử nhớt, ướp chút nước mắm và tiêu trong 10 phút.",
+          "Bước 2: Lá giang rửa sạch, để ráo, vò dập nhẹ bằng tay.",
+          "Bước 3: Đun sôi 800ml nước sạch, thả cá lóc và cà chua vào đun nhỏ lửa 7–10 phút cho cá chín ngọt nước.",
+          "Bước 4: Thả lá giang vào đảo đều, đun sôi lại 1–2 phút cho lá chuyển màu vàng ô liu tự nhiên và tiết vị chua thanh dịu.",
+          "Bước 5: Nêm nếm gia vị vừa ăn, rắc ngò gai, hành hoa và vài lát ớt rồi tắt bếp. Dùng nóng cùng cơm trắng."
+        ],
+        "optimal_timing": "Ăn vào bữa cơm trưa hoặc chiều ngày nóng.",
+        "cautions": "Lá giang rất nhanh chín, không nấu quá 2 phút trên bếp lửa."
+      }
+    ],
+    "contraindications": [
+      "Người có tiền sử sỏi thận do oxalate nên dùng lượng vừa phải.",
+      "Không nên nấu lá giang trong nồi nhôm hoặc sắt tráng mỏng quá lâu vì acid tự nhiên có thể phản ứng với kim loại."
+    ],
+    "traditionalProperties": "Vị chua dịu, tính mát; quy kinh Can, Tỳ. Tác dụng thanh nhiệt giải độc, tiêu viêm, sát trùng, giải khát, kích thích tiêu hóa.",
     "partsUsed": "Dây và lá (Dây thìa canh, Dừa cạn), rễ (Ba gạc) hoặc vỏ thân (Mức hoa trắng)."
   },
   "5535803": {
@@ -75026,17 +75105,71 @@
     "scientificName": "Urceola polymorpha (Pierre) D.J.Middleton & Livsh.",
     "family": "Apocynaceae",
     "genus": "Urceola",
-    "edibilityGrade": "TOXIC_FORBIDDEN",
-    "gradeDescription": "Tuyệt đối không dùng trong ẩm thực hoặc đồ uống (Nguy cơ ngộ độc).",
-    "isToxic": true,
-    "toxicAlertReason": "Thuộc Họ Trúc đào (Apocynaceae) chứa glycoside tim có nguy cơ ngộ độc cao.",
+    "edibilityGrade": "CULINARY_TONIC",
+    "gradeDescription": "Rau ăn & Dược liệu thanh nhiệt kinh điển — Vị chua thanh tự nhiên, dùng nấu lẩu gà lá giang, canh chua cá giải nhiệt tỳ vị.",
+    "isToxic": false,
+    "toxicAlertReason": "",
     "matchedHealthGoals": [
-      "an_than_ngu_ngon"
+      "thanh_nhiet_giai_doc",
+      "kien_ty_tieu_hoa"
     ],
-    "recipesCount": 0,
-    "recipes": [],
-    "contraindications": [],
-    "traditionalProperties": "Vị đắng, tính hàn hoặc bình; quy kinh Can, Tâm.",
+    "recipesCount": 2,
+    "recipes": [
+      {
+        "recipe_id": "rec_lau_ga_la_giang",
+        "title": "Lẩu Gà Nấu Lá Giang Chua Thanh Giải Nhiệt Nam Bộ",
+        "category": "Canh & Lẩu dưỡng sinh giải nhiệt",
+        "preparation_time": "35 phút",
+        "target_benefit": "Thanh nhiệt giải độc, tiêu thực kích thích vị giác, bồi bổ thể lực, giải trừ háo khát ngày nắng nóng.",
+        "ingredients": [
+          "Thịt gà ta thả vườn: 800g–1kg (chặt miếng vừa ăn)",
+          "Lá giang tươi: 150g (rửa sạch, vò nhẹ cho hơi dập)",
+          "Sả cây: 3 nhánh đập giập",
+          "Ớt sừng: 1 quả thái lát",
+          "Hành tỏi băm, ngò gai, rau ngổ",
+          "Gia vị: Nước mắm ngon, muối, đường phèn, hạt nêm",
+          "Ăn kèm: Bún tươi, rau muống chẻ, hoa chuối"
+        ],
+        "step_by_step": [
+          "Bước 1: Thịt gà xát muối rửa sạch, chặt miếng vừa ăn, ướp với chút hành tỏi băm, 1 thìa nước mắm, tiêu trong 15 phút.",
+          "Bước 2: Lá giang nhặt lấy lá non và bánh tẻ, ngâm nước muối loãng 5 phút, rửa sạch vớt ráo. Dùng tay vò nhẹ cho dập lá để giải phóng vị chua tự nhiên.",
+          "Bước 3: Phi thơm hành tỏi và sả đập giập trong nồi, cho thịt gà vào xào săn thơm trên lửa lớn.",
+          "Bước 4: Rót 1.5 lít nước vào đun sôi bùng, hớt sạch bọt rồi hạ lửa nhỏ ninh 15–20 phút cho gà chín mềm ngọt nước.",
+          "Bước 5: Thả lá giang đã vò dập vào nồi nước lẩu, nêm thêm chút đường phèn và nước mắm cho vị chua ngọt dịu cân bằng.",
+          "Bước 6: Rắc ngò gai, ớt lát lên trên. Dùng nóng cùng bún tươi và rau ghém."
+        ],
+        "optimal_timing": "Dùng trong bữa trưa hoặc tối, đặc biệt vào mùa hè hoặc khi cơ thể cảm thấy háo khát chán ăn.",
+        "cautions": "Nên vò dập nhẹ lá trước khi thả vào nồi nước sôi. Không nấu hoặc om trong nồi nhôm trần quá lâu."
+      },
+      {
+        "recipe_id": "rec_canh_chua_ca_la_giang",
+        "title": "Canh Chua Cá Lóc Nấu Lá Giang Thanh Mát Tiêu Độc",
+        "category": "Canh dưỡng sinh thanh nhiệt mát gan",
+        "preparation_time": "25 phút",
+        "target_benefit": "Thanh nhiệt, giải độc gan, tiêu thực, giải khát, khử tanh thịt cá bằng acid hữu cơ tự nhiên lành tính.",
+        "ingredients": [
+          "Cá lóc đồng làm sạch: 400g (cắt khúc 3cm)",
+          "Lá giang tươi bánh tẻ: 100g (vò dập nhẹ)",
+          "Cà chua chín: 1 quả bổ múi cau",
+          "Hành hoa, ngò gai thái nhỏ",
+          "Gia vị: Nước mắm, muối, ớt hiểm"
+        ],
+        "step_by_step": [
+          "Bước 1: Cá lóc xát muối và nước cốt chanh khử nhớt, ướp chút nước mắm và tiêu trong 10 phút.",
+          "Bước 2: Lá giang rửa sạch, để ráo, vò dập nhẹ bằng tay.",
+          "Bước 3: Đun sôi 800ml nước sạch, thả cá lóc và cà chua vào đun nhỏ lửa 7–10 phút cho cá chín ngọt nước.",
+          "Bước 4: Thả lá giang vào đảo đều, đun sôi lại 1–2 phút cho lá chuyển màu vàng ô liu tự nhiên và tiết vị chua thanh dịu.",
+          "Bước 5: Nêm nếm gia vị vừa ăn, rắc ngò gai, hành hoa và vài lát ớt rồi tắt bếp. Dùng nóng cùng cơm trắng."
+        ],
+        "optimal_timing": "Ăn vào bữa cơm trưa hoặc chiều ngày nóng.",
+        "cautions": "Lá giang rất nhanh chín, không nấu quá 2 phút trên bếp lửa."
+      }
+    ],
+    "contraindications": [
+      "Người có tiền sử sỏi thận do oxalate nên dùng lượng vừa phải.",
+      "Không nên nấu lá giang trong nồi nhôm hoặc sắt tráng mỏng quá lâu vì acid tự nhiên có thể phản ứng với kim loại."
+    ],
+    "traditionalProperties": "Vị chua dịu, tính mát; quy kinh Can, Tỳ. Tác dụng thanh nhiệt giải độc, tiêu viêm, sát trùng, giải khát, kích thích tiêu hóa.",
     "partsUsed": "Dây và lá (Dây thìa canh, Dừa cạn), rễ (Ba gạc) hoặc vỏ thân (Mức hoa trắng)."
   },
   "10242935": {

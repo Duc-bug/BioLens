@@ -5,6 +5,19 @@ import re
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from configs.settings import STORAGE_DIR
 from dataset.nutraceutical_rules import (
     HEALTH_GOALS,
@@ -29,12 +42,11 @@ class NutraceuticalEngine:
     def _load_registry(self):
         """Nap file database nutraceutical_registry.json."""
         if not self.registry_path.exists():
-            print(f"⚠️ [NutraceuticalEngine] Chưa tìm thấy {self.registry_path}, đang chờ sinh dữ liệu...")
             return
 
         with open(self.registry_path, "r", encoding="utf-8") as f:
             self._registry = json.load(f)
-        print(f"✅ [NutraceuticalEngine] Đã tải cơ sở tri thức ẩm thực của {len(self._registry)} loài.")
+
 
     def get_profile(self, species_key: str) -> Optional[Dict[str, Any]]:
         """Lay ho so am thuc cua 1 loai theo speciesKey GBIF."""

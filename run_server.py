@@ -14,5 +14,4 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding="utf-8")
     print("=" * 72)
     print(f"Đang khởi động BioLens Web Server tại: http://{HOST}:{PORT}")
-    print("=" * 72)
-    uvicorn.run("backend.app:app", host=HOST, port=PORT, reload=False)
+    uvicorn.run("backend.app:app", host=HOST, port=PORT, reload=True)
