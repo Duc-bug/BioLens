@@ -1,3 +1,10 @@
+"""
+BioLens - Server Execution Entrypoint
+Khởi chạy máy chủ FastAPI với Uvicorn.
+"""
+
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 import uvicorn
@@ -9,9 +16,27 @@ if str(ROOT) not in sys.path:
 from configs.settings import HOST, PORT
 
 
-if __name__ == "__main__":
+def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     print("=" * 72)
-    print(f"Đang khởi động BioLens Web Server tại: http://{HOST}:{PORT}")
-    uvicorn.run("backend.app:app", host=HOST, port=PORT, reload=True)
+    print("BIOLENS VIETNAM - HE THONG NHAN DIEN THUC VAT & NAM DUOC LIEU (BIOCLIP 2)")
+    print(f"May chu dang khoi dong tai: http://{HOST}:{PORT}")
+    print("=" * 72)
+
+    uvicorn.run(
+        "backend.app:app",
+        host=HOST,
+        port=PORT,
+        reload=True,
+        reload_dirs=["backend", "configs"],
+        reload_excludes=["data/*", "scripts/*", "storage/*", "*.json"]
+    )
+
+
+if __name__ == "__main__":
+    main()

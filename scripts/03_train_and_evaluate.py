@@ -18,7 +18,7 @@ def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     print("=" * 76)
-    print("BIOLENS - BƯỚC 3: HUẤN LUYỆN & SO SÁNH 4 THUẬT TOÁN HỌC MÁY (3,570 LOÀI)")
+    print("BIOLENS - BƯỚC 3: HUẤN LUYỆN & ĐÁNH GIÁ BIOCLIP 2 TRÊN 3,570 LOÀI")
     print("=" * 76)
 
     X_all = np.load(EMBEDDINGS_MATRIX_PATH)

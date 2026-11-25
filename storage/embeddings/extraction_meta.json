@@ -1,10 +1,12 @@
 {
-  "backbone": "MobileNetV3-Large (IMAGENET1K_V2)",
+  "version": "bioclip2_single_model",
+  "backbone": "hf-hub:imageomics/bioclip-2 (ViT-L/14, 224px)",
+  "useFlipTTA": true,
   "device": "CUDA GPU Acceleration (FP16)",
-  "featureDim": 960,
+  "featureDim": 768,
   "numTotalManifest": 310647,
   "numValidSamples": 310647,
   "numCorruptedSkipped": 0,
-  "extractionTimeSeconds": 1662.83,
-  "throughputImagesPerSec": 186.82
+  "extractionTimeSeconds": 4275.18,
+  "throughputImagesPerSec": 72.66
 }

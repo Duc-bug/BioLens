@@ -1,70 +1,67 @@
 # Tài liệu Kiến trúc Hệ thống & Cơ sở Toán học — BioLens Vietnam
 
-Tài liệu này mô tả chi tiết luồng xử lý dữ liệu, công thức toán học của **Bộ lọc Từ chối Ảnh ngoại lai 2 Tầng (2-Stage Open-Set OOD Filter)**, **Không gian Đặc trưng Thực vật học Đa nhiệm (Hierarchical Botanical Metric Adapter)** và **4 Thuật toán Học máy** trong hệ thống **BioLens**.
+Tài liệu này mô tả luồng xử lý đầu-cuối, các công thức toán học của mô hình nền sinh học **BioCLIP 2**, đầu phân loại tinh chỉnh **`BioCLIP2TaxonomicClassifier`**, **Bộ lọc từ chối ảnh ngoài miền 2 tầng (`TwoStageOODFilter`)** và **Mô-đun gợi ý dược thiện có kiểm soát an toàn** trong dự án **BioLens Vietnam**.
 
 ---
 
-## 1. Sơ đồ Luồng Xử lý Tổng thể (End-to-End Pipeline)
+## 1. Sơ đồ Luồng Xử lý Tổng thể
 
 ```mermaid
 flowchart TD
-    A["Ảnh đầu vào (Camera WebRTC / Upload File)"] --> B["Tầng 0: Kiểm tra Chất lượng Quang học (Laplacian Blur & Brightness)"]
-    B -- "Ảnh quá mờ / tối đen" --> R0["TỪ CHỐI NHẬN DIỆN (Trả về cảnh báo chất lượng ảnh)"]
-    B -- "Hợp lệ" --> C["Mạng BotanicalDualBackbone (MobileNetV3-Large FP16)"]
-    C --> D1["Logits Ngữ nghĩa 1,000 lớp"]
-    C --> D2["Vector Đặc trưng thô z_raw (960 chiều)"]
-    D2 --> E["Tinh chỉnh Không gian Thực vật học (Power-Law Whitening + BotanicalMetricAdapter)"]
-    E --> F["Vector Đặc trưng Tinh chỉnh z_ft (960 chiều, ||z_ft||_2 = 1)"]
-    D1 --> G["Tầng 1: Cổng Kiểm duyệt Miền Sinh vật học (Domain Gate + PCA Subspace Energy)"]
-    F --> G
-    G -- "Phát hiện đồ vật, người, xe cộ, màn hình..." --> R1["TỪ CHỐI NHẬN DIỆN (Ngoài miền Thực vật / Nấm)"]
-    G -- "Thuộc miền Thực vật / Sinh vật" --> H["4 Thuật toán Học máy + BioLens Hybrid Ensemble (3,570 Loài)"]
-    H --> I["Tầng 2: Cổng Độ tương đồng Hình thái (Max Prototype Cosine & Margin Gate)"]
-    I -- "Cosine < Ngưỡng hiệu chuẩn" --> R2["TỪ CHỐI NHẬN DIỆN (Độ tương đồng hình thái quá thấp)"]
-    I -- "Đạt chuẩn" --> J["Truy xuất Hồ sơ Thực vật học & Dược liệu 6 Mục + Ảnh mẫu Đối chiếu"]
+    A["Ảnh đầu vào (Camera WebRTC / Upload File)"] --> B["Bước tiền kiểm: Chất lượng ảnh (Độ nét Laplacian, Độ sáng, Tương phản)"]
+    B -- "Ảnh quá mờ / tối / lóa" --> R0["Từ chối nhận diện (Trả thông báo chất lượng ảnh)"]
+    B -- "Đạt chuẩn" --> C["Mô hình nền BioCLIP 2 (ViT-L/14 @ 224x224, 2-View Flip TTA, FP16)"]
+    C --> D1["Vector đặc trưng ảnh chuẩn hóa L2: x (768 chiều)"]
+    C --> D2["Xác suất ngữ nghĩa Zero-Shot trên 11 câu mô tả miền"]
+    D1 --> E["Tầng 1: Kiểm định ngữ nghĩa ngoài miền (prob_non_bio > 0,55 & prob_botanical < 0,45)"]
+    D2 --> E["Tầng 1: Ngữ nghĩa Zero-Shot & Năng lượng PCA 64D (subspaceEnergy >= 0,62)"]
+    E -- "Phát hiện người, thiết bị, nội thất, xe cộ, động vật, tài liệu" --> R1["Từ chối nhận diện (Ngoài miền thực vật / nấm)"]
+    E -- "Hợp lệ" --> F["Tầng 2: Cosine tâm cụm >= 0,7462 (chặn dưới 3,5-sigma) & MaxLogit >= 6,5"]
+    F -- "Không đạt ngưỡng" --> R2["Từ chối nhận diện (Không đủ độ khớp hình thái)"]
+    F -- "Đạt ngưỡng" --> G["Đầu phân loại BioCLIP2TaxonomicClassifier (Top-1: 90,04% | Top-5: 96,84%)"]
+    G --> H["Tra cứu Hồ sơ Thực vật học 7 mục & Kiểm soát an toàn Dược thiện (3.570 loài)"]
 ```
 
 ---
 
-## 2. Tinh chỉnh Không gian Đặc trưng (Phase 2 Feature-Space Fine-Tuning)
+## 2. Biểu diễn Đa phương thức trên BioCLIP 2 (`models/feature_extractor.py`)
 
-### 2.1. Chuẩn hóa Power-Law (Signed Power-Law Normalization & Centering)
-Đặc trưng $\mathbf{z}_{\text{raw}} \in \mathbb{R}^{960}$ trích xuất từ `MobileNetV3-Large` thường có phân phối lệch (bursty activations) do ảnh hưởng bởi phông nền (đất, cỏ, lá khô). Hệ thống áp dụng phép biến đổi:
+### 2.1. Biểu diễn hình ảnh 2 góc nhìn (`768` chiều)
+Ảnh $I$ được xoay theo thẻ EXIF, chuyển sang RGB, co giãn Bicubic cạnh ngắn về $\text{round}(224 \times 1,05) = 235$ pixel, cắt tâm $224 \times 224$ và chuẩn hóa theo trung bình, độ lệch chuẩn CLIP. Với ảnh gốc $I$ và ảnh lật ngang $\tilde{I}$:
 
-$$\tilde{\mathbf{z}} = \text{sign}(\mathbf{z}_{\text{raw}}) \odot |\mathbf{z}_{\text{raw}} + \epsilon|^{\beta}, \quad \beta = 0.55$$
+$$\mathbf{f}_1 = \text{norm}_2(f_{\text{img}}(I)), \quad \mathbf{f}_2 = \text{norm}_2(f_{\text{img}}(\tilde{I})), \quad \mathbf{x} = \text{norm}_2(\mathbf{f}_1 + \mathbf{f}_2) \in \mathbb{R}^{768}$$
 
-$$\mathbf{z}_w = \frac{\tilde{\mathbf{z}} - \boldsymbol{\mu}_{\text{train}}}{\|\tilde{\mathbf{z}} - \boldsymbol{\mu}_{\text{train}}\|_2}$$
+### 2.2. Biểu diễn văn bản phân cấp GBIF (`3570 × 768`)
+Với mỗi loài $c \in \{1, \dots, 3570\}$, Text Encoder của BioCLIP 2 mã hóa câu phân cấp đầy đủ (`"a photo of <Kingdom> <Class> <Order> <Family> <Genus> <CanonicalName>"`) thành $\mathbf{e}_{1,c}$ và câu ngắn (`"a photo of <CanonicalName>"`) thành $\mathbf{e}_{2,c}$:
 
-### 2.2. Mạng `BotanicalMetricAdapter` Đa nhiệm Phân cấp (Loài - Chi - Họ)
-Mạng kết hợp nhánh **Squeeze-and-Excitation (SE) Channel Attention** và **Residual Bottleneck**, được huấn luyện đồng thời với hàm mất mát phân cấp thực vật học:
-
-$$\mathcal{L}_{\text{Hier}} = \mathcal{L}_{\text{CE}}(\mathbf{y}_{\text{species}}, \hat{\mathbf{y}}_{\text{species}}) + 0.30\,\mathcal{L}_{\text{CE}}(\mathbf{y}_{\text{family}}, \hat{\mathbf{y}}_{\text{family}}) + 0.20\,\mathcal{L}_{\text{CE}}(\mathbf{y}_{\text{genus}}, \hat{\mathbf{y}}_{\text{genus}})$$
-
-Nhờ hàm mất mát này, các loài thuộc cùng một **Chi (Genus)** hoặc **Họ (Family)** được gom lại gần nhau trên siêu cầu đơn vị $\mathbb{S}^{959}$, đồng thời tách biệt rõ các loài khác nhau.
+$$\mathbf{t}_c = \text{norm}_2(0,65\,\mathbf{e}_{1,c} + 0,35\,\mathbf{e}_{2,c}) \in \mathbb{R}^{768}$$
 
 ---
 
-## 3. Bốn Thuật toán Học máy & Mô hình Kết hợp (Hybrid Ensemble)
+## 3. Đầu Phân loại `BioCLIP2TaxonomicClassifier` (`models/ml_classifiers.py`)
 
-1. **Multi-Subcenter Attention-Pruned Cosine Prototype (`cosine_prototype`)**:
-   - Lọc bỏ các ảnh mẫu bị nhiễu ngoại biên bằng trọng số tự chú ý $w_i = \exp(6.0 \cdot \cos(\mathbf{z}_i, \boldsymbol{\mu}_c^{(0)}))$.
-   - Tách mỗi loài thành tâm chính $\boldsymbol{\mu}_c$ và 2 tâm phụ $(\boldsymbol{\mu}_{c,1}, \boldsymbol{\mu}_{c,2})$ đại diện cho hai nhóm hình thái (ví dụ: ảnh chụp Hoa/Quả vs ảnh chụp Lá/Thân).
-2. **Inverse-Frequency Balanced Weighted Cosine $k$-NN (`weighted_knn`, $k=19$)**:
-   - Tìm $k=19$ mẫu huấn luyện gần nhất trên GPU bằng phép nhân ma trận `FP16`.
-   - Tính điểm bầu chọn có bù đắp tần suất lớp nghịch đảo $N_c^{-0.16}$ để bảo vệ các loài quý hiếm (Few-shot).
-3. **Hard-Negative Large-Margin Multi-class Linear SVM (`linear_svm`)**:
-   - Tối ưu hóa 3,570 siêu phẳng phân lớp với sự kết hợp giữa **Crammer-Singer Multi-margin Hinge Loss** ($\text{margin} = 1.2$) và **Logit-Adjusted Cross-Entropy**.
-4. **Class-Balanced SE-Residual Cosine MLP (`cosine_mlp`)**:
-   - Mạng Neural $960 \rightarrow 1408 \rightarrow 3570$ tích hợp cổng chú ý kênh SE-Residual, huấn luyện với **Feature-level Manifold Mixup** ($\alpha = 0.2$) và biên góc **CosFace** ($m = 0.10$) kèm bù đắp tiên nghiệm lớp $\tau \log \pi_c$.
-5. **BioLens Hybrid Ensemble (`ensemble`)**:
-   - Kết hợp tuyến tính có hiệu chuẩn trên tập Validation giữa cả 4 thuật toán trên để đạt độ chính xác cao nhất ở mọi quy mô.
+- **Nhánh dư tinh chỉnh đặc trưng:** `Dropout(0,08) -> Linear(768, 1536) -> BatchNorm1d -> GELU -> Dropout(0,22) -> Linear(1536, 768) -> BatchNorm1d` tạo $\Delta(\mathbf{x})$:
+
+$$\mathbf{z} = \text{norm}_2(\mathbf{x} + \alpha\,\Delta(\mathbf{x})), \quad \alpha_0 = 0,0 \text{ (hội tụ tại } \alpha = 0,0392\text{)}$$
+
+- **Khởi tạo ma trận trọng số lớp kết hợp văn bản GBIF và tâm cụm ảnh huấn luyện $\mathbf{C}$:**
+
+$$\mathbf{W}_0 = \text{norm}_2(0,35\,\mathbf{T} + 0,65\,\mathbf{C}) \in \mathbb{R}^{3570 \times 768}$$
+
+- **Hàm mất mát lúc huấn luyện (Logit Adjustment $\tau = 0,50$, Label Smoothing $0,06$, Feature Mixup $p = 0,25$, EMA $0,995$):**
+
+$$\ell_c^{\text{train}}(\mathbf{x}) = 26,0 \cdot \mathbf{z}^\top \text{norm}_2(\mathbf{w}_c) + 0,50 \log(\pi_c + 10^{-8})$$
+
+- **Điểm số lúc suy luận:** $\ell_c^{\text{infer}}(\mathbf{x}) = 26,0 \cdot \mathbf{z}^\top \text{norm}_2(\mathbf{w}_c)$ (trên giao diện Web chia hệ số nhiệt độ $1,4$ trước Softmax).
 
 ---
 
-## 4. Bộ lọc Từ chối Nhận diện 2 Tầng (2-Stage Open-Set OOD Filter)
+## 4. Tóm tắt Kết quả Thực nghiệm (`storage/reports/ml_benchmark_results.json`)
 
-Khi người dùng chụp một vật thể không phải thực vật (con người, bàn ghế, điện thoại, màn hình máy tính, xe cộ, thú cưng) hoặc ảnh bị che tối/mờ nhòe:
-
-- **Tầng 0 (Optical Quality Gate)**: Kiểm tra phương sai Laplacian ($\text{Var}(\nabla^2 I) \ge 18.0$) và độ sáng trung bình ($15 \le \bar{I} \le 250$).
-- **Tầng 1 (Semantic & Botanical PCA Subspace Gate)**: Kiểm tra tổng xác suất nhóm lớp nhân tạo/động vật và tính năng lượng hình chiếu của vector đặc trưng lên không gian con 64 trục chính (PCA Subspace) của 3,570 loài thực vật.
-- **Tầng 2 (Calibrated Prototype Cosine Gate)**: Kiểm tra độ tương đồng góc Cosine lớn nhất $\max_c \cos(\mathbf{z}_{\text{ft}}, \boldsymbol{\mu}_c)$ so với ngưỡng hiệu chuẩn ROC-AUC trên tập Validation.
+- **Bộ dữ liệu `VietMediSpecies2026`:** `310.647` ảnh hợp lệ / `3.570` loài (`Train: 248.310`, `Val: 31.136`, `Test: 31.201`).
+- **Kết quả trên tập Test (`31.201` ảnh):**
+  - `BioCLIP 2 Zero-Shot (Text Prompt)`: Top-1 `78,37%` | Top-5 `92,81%` | Weighted-F1 `77,76%`.
+  - `Cosine Nearest Centroid`: Top-1 `79,06%` | Top-5 `92,25%` | Weighted-F1 `79,59%`.
+  - `Weighted Cosine k-NN (k = 21)`: Top-1 `87,19%` | Top-5 `95,97%` | Weighted-F1 `86,67%`.
+  - **`BioCLIP 2 Taxonomic Classifier` (Mô hình triển khai):** Top-1 **`90,04%`** | Top-3 **`95,68%`** | Top-5 **`96,84%`** | Macro-F1 **`84,63%`** | Weighted-F1 **`89,74%`** | Độ trễ đầu phân loại **`0,009 ms/ảnh`**.
+- **Phân định an toàn `nutraceutical_registry.json` (`3.570` loài):** `MEDICINAL_ONLY: 3.236`, `TOXIC_FORBIDDEN: 176`, `BEVERAGE_INFUSION: 58`, `SPICE_AROMATIC: 56`, `CULINARY_TONIC: 44` (`70` loài có `87` công thức định lượng chi tiết).

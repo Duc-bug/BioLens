@@ -142,8 +142,8 @@
                             </div>
                         </div>
 
-                        <!-- Tự động dùng mô hình mạnh nhất BioLens Hybrid Ensemble (đã ẩn khỏi UI) -->
-                        <input type="hidden" id="algorithmSelect" value="ensemble" />
+                        <!-- Tự động dùng mô hình BioCLIP 2 Taxonomic Classifier (đã ẩn khỏi UI) -->
+                        <input type="hidden" id="algorithmSelect" value="bioclip2_classifier" />
 
                         <button type="button" id="runIdentifyBtn" class="btn btn-primary btn-block" disabled>
                             <span>Phân tích &amp; Nhận diện</span>
@@ -369,11 +369,8 @@
                         </p>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <a href="/api/download-report-v1" class="btn btn-secondary">
-                            <span>Tải Báo cáo Phần 1 (.docx)</span>
-                        </a>
                         <a href="/api/download-report" class="btn btn-primary">
-                            <span>Tải Báo cáo Đầy đủ (.docx)</span>
+                            <span>Tải Báo cáo Đồ án (.docx)</span>
                         </a>
                     </div>
                 </div>
@@ -413,30 +410,6 @@
                 </div>
             </div>
 
-            <!-- Bảng Đối sánh Ablation Study: Phần 1 vs Phần 2 -->
-            <div class="card" style="margin-top:18px;">
-                <div class="card-header">
-                    <h3 class="card-title">Đối sánh kết quả trước và sau tinh chỉnh (Phần 1 vs Phần 2)</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="scientific-table" id="ablationComparisonTable">
-                        <thead>
-                            <tr>
-                                <th>Mô hình</th>
-                                <th>Phần 1 Top-1</th>
-                                <th>Phần 2 Top-1</th>
-                                <th>Mức tăng Top-1</th>
-                                <th>Phần 1 Top-5</th>
-                                <th>Phần 2 Top-5</th>
-                                <th>Mức tăng Top-5</th>
-                                <th>Weighted F1 (Phần 1 → 2)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- Bảng Phân cấp Sinh học & Mật độ mẫu -->
             <div class="benchmark-two-col">
                 <div class="card">
@@ -467,9 +440,9 @@
                                 <tr>
                                     <th>Nhóm Mật độ Ảnh</th>
                                     <th>Số Loài</th>
-                                    <th>Prototype Top-1</th>
-                                    <th>Ensemble Top-1</th>
-                                    <th>Ensemble Top-5</th>
+                                    <th>Centroid Top-1</th>
+                                    <th>Classifier Top-1</th>
+                                    <th>Classifier Top-5</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

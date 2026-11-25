@@ -12,7 +12,7 @@ def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     print("=" * 72)
-    print("BIOLENS - BƯỚC 2: TRÍCH XUẤT ĐẶC TRƯNG 3,570 LOÀI TRÊN GPU (CUDA FP16)")
+    print("BIOLENS - BƯỚC 2: TRÍCH XUẤT ĐẶC TRƯNG BIOCLIP 2 (3,570 LOÀI, FP16)")
     print("=" * 72)
     meta = extract_dataset_embeddings()
     print("-" * 72)

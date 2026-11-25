@@ -11,25 +11,33 @@ __pycache__/
 venv/
 env/
 
-# Environment variables
+# Environment variables & secrets
 .env
 .env.local
 
-# macOS / Windows OS metadata
+# OS & Office temporary lock files
 __MACOSX/
 ._*
 .DS_Store
 Thumbs.db
 desktop.ini
+~$*.docx
+~$*.xlsx
+~$*.pptx
 
-# Large dataset raw folders & heavy binary embeddings (keep JSON reports & docs)
-storage/embeddings/*.npy
-storage/embeddings/rel_paths.json
-storage/checkpoints/*.pt
-storage/checkpoints/*.npz
-storage/catalog/species_knowledge.json
-storage/catalog/species_catalog.json
-storage/catalog/dataset_splits.json
+# Large raw feature matrices & local backup archives (keep lightweight BioCLIP 2 checkpoints & catalogs)
+storage/embeddings/features_*.npy
+storage/embeddings/labels_*.npy
+storage/embeddings/splits_*.npy
+storage/embeddings/valid_mask_*.npy
+storage/embeddings/rel_paths*.json
+storage/embeddings/extraction_state_*.json
+storage/embeddings/*_v3_sota.json
+storage/reports/*_v3_sota.json
+storage/checkpoints/v3_sota_backup/
+
+# Local manuscript drafts
+ieee_paper/
 
 # IDE settings
 .vscode/

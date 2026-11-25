@@ -537,9 +537,21 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderAlgorithmComparisonTable(compMap) {
         const tbody = document.querySelector("#algorithmComparisonTable tbody");
         if (!tbody) return;
-        const order = ["ensemble", "cosine_mlp", "weighted_knn", "linear_svm", "cosine_prototype"];
-        tbody.innerHTML = order
-            .filter((k) => compMap[k])
+        const preferred = [
+            "bioclip2_classifier",
+            "cosine_centroid",
+            "weighted_knn",
+            "zero_shot_text",
+            "ensemble",
+            "cosine_mlp",
+            "linear_svm",
+            "cosine_prototype",
+        ];
+        const keys = [
+            ...preferred.filter((k) => compMap[k]),
+            ...Object.keys(compMap).filter((k) => !preferred.includes(k)),
+        ];
+        tbody.innerHTML = keys
             .map((k) => {
                 const item = compMap[k];
                 return `
@@ -860,12 +872,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const models = multiscale[scaleKey] || bench.models || {};
 
         const tbody = document.querySelector("#benchmarkComparisonTable tbody");
-        const order = ["ensemble", "cosine_mlp", "weighted_knn", "linear_svm", "cosine_prototype"];
+        const preferred = [
+            "bioclip2_classifier",
+            "weighted_knn",
+            "cosine_centroid",
+            "zero_shot_text",
+            "ensemble",
+            "cosine_mlp",
+            "linear_svm",
+            "cosine_prototype",
+        ];
+        const order = [
+            ...preferred.filter((k) => models[k]),
+            ...Object.keys(models).filter((k) => !preferred.includes(k)),
+        ];
         tbody.innerHTML = order
-            .filter((k) => models[k])
             .map((k) => {
                 const m = models[k];
-                const isBest = k === "ensemble";
+                const isBest = k === "bioclip2_classifier" || k === "ensemble";
                 return `
                     <tr style="${isBest ? "background:#EFF7F1;font-weight:600;" : ""}">
                         <td><strong>${m.modelName}</strong></td>
@@ -917,9 +941,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const shots = bench.shotGroupBreakdown || {};
             const charts = data.chartsManifest || [];
 
-            const ensTop50 = (multiscale.top50 && multiscale.top50.ensemble) || {};
-            const ensTop100 = (multiscale.top100 && multiscale.top100.ensemble) || {};
-            const ensFull = (bench.models && bench.models.ensemble) || {};
+            const ensTop50 = (multiscale.top50 && (multiscale.top50.bioclip2_classifier || multiscale.top50.ensemble)) || {};
+            const ensTop100 = (multiscale.top100 && (multiscale.top100.bioclip2_classifier || multiscale.top100.ensemble)) || {};
+            const ensFull = (bench.models && (bench.models.bioclip2_classifier || bench.models.ensemble)) || {};
 
             document.getElementById("benchmarkKpiGrid").innerHTML = `
                 <div class="kpi-card">
@@ -945,34 +969,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             renderScaleComparisonTable(selectedBenchmarkScale);
-
-            // Bảng Đối sánh Ablation Study (Phần 1 Baseline v1 vs Phần 2 Fine-tuned v2)
-            const ablationBody = document.querySelector("#ablationComparisonTable tbody");
-            const ablation = bench.ablationComparison || {};
-            if (ablationBody && ablation) {
-                const aOrder = ["ensemble", "cosine_mlp", "weighted_knn", "linear_svm", "cosine_prototype"];
-                ablationBody.innerHTML = aOrder
-                    .filter((k) => ablation[k])
-                    .map((k) => {
-                        const a = ablation[k];
-                        const d1 = a.deltaTop1 >= 0 ? `+${a.deltaTop1}%` : `${a.deltaTop1}%`;
-                        const d5 = a.deltaTop5 >= 0 ? `+${a.deltaTop5}%` : `${a.deltaTop5}%`;
-                        const isEns = k === "ensemble";
-                        return `
-                            <tr style="${isEns ? "background:#EFF7F1;font-weight:600;" : ""}">
-                                <td><strong>${a.modelName}</strong></td>
-                                <td>${a.v1BaselineTop1}%</td>
-                                <td><strong>${a.v2FinetunedTop1}%</strong></td>
-                                <td style="color:#1B5E20;font-weight:600;">${d1}</td>
-                                <td>${a.v1BaselineTop5}%</td>
-                                <td><strong>${a.v2FinetunedTop5}%</strong></td>
-                                <td style="color:#1B5E20;font-weight:600;">${d5}</td>
-                                <td>${a.v1BaselineWeightedF1}% → <strong>${a.v2FinetunedWeightedF1}%</strong></td>
-                            </tr>
-                        `;
-                    })
-                    .join("");
-            }
 
             // Bảng Phân cấp Sinh học (Taxonomy)
             const hierBody = document.querySelector("#hierarchicalAccuracyTable tbody");
@@ -1003,9 +999,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <tr>
                             <td><strong>${shots[k].groupName}</strong></td>
                             <td>${shots[k].numSpecies.toLocaleString("vi-VN")} loài</td>
-                            <td>${shots[k].prototypeTop1}%</td>
-                            <td><strong>${shots[k].ensembleTop1}%</strong></td>
-                            <td><strong>${shots[k].ensembleTop5}%</strong></td>
+                            <td>${shots[k].centroidTop1 ?? shots[k].prototypeTop1}%</td>
+                            <td><strong>${shots[k].classifierTop1 ?? shots[k].ensembleTop1}%</strong></td>
+                            <td><strong>${shots[k].classifierTop5 ?? shots[k].ensembleTop5}%</strong></td>
                         </tr>
                     `
                     )

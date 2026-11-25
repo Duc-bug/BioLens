@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import random
 from pathlib import Path
 from typing import Optional
@@ -16,8 +17,6 @@ from configs.settings import (
     REPORTS_DIR,
     BENCHMARK_REPORT_PATH,
     EMBEDDINGS_META_PATH,
-    WORD_REPORT_PART1_PATH,
-    WORD_REPORT_PART2_PATH,
     WORD_REPORT_PATH,
 )
 from models.inference_engine import BioLensInferenceEngine
@@ -51,7 +50,7 @@ def get_nutra_engine() -> NutraceuticalEngine:
 @router.post("/identify")
 async def identify_uploaded_image(
     file: UploadFile = File(...),
-    algorithm: str = Form("ensemble"),
+    algorithm: str = Form("bioclip2_classifier"),
     organ: str = Form("auto"),
 ):
     """Nhận diện ảnh người dùng tải lên hoặc chụp từ Camera WebRTC."""
@@ -85,7 +84,7 @@ async def identify_uploaded_image(
 async def identify_demo_specimen(
     mode: str = Query("plant", description="plant | ood_object | ood_blur"),
     species_key: Optional[str] = Query(None),
-    algorithm: str = Query("ensemble"),
+    algorithm: str = Query("bioclip2_classifier"),
 ):
     """
     Hỗ trợ kiểm thử nhanh 1-click trên giao diện Web:
@@ -287,10 +286,6 @@ async def get_ml_benchmarks_and_dataset_stats():
         "chartsManifest": charts_manifest,
         "hasWordReport": WORD_REPORT_PATH.exists(),
         "wordReportUrl": "/api/download-report" if WORD_REPORT_PATH.exists() else None,
-        "hasPart1Report": WORD_REPORT_PART1_PATH.exists(),
-        "part1ReportUrl": "/api/download-report-v1" if WORD_REPORT_PART1_PATH.exists() else None,
-        "hasPart2Report": WORD_REPORT_PART2_PATH.exists(),
-        "part2ReportUrl": "/api/download-report" if WORD_REPORT_PART2_PATH.exists() else None,
     }
 
 
@@ -307,25 +302,12 @@ async def serve_report_chart(chart_name: str):
 
 @router.get("/download-report")
 async def download_word_report():
-    """Tải trực tiếp file Báo cáo Đồ án Word Đầy đủ (Phần 1 + Phần 2 Fine-tuned, .docx)."""
-    target_path = WORD_REPORT_PART2_PATH if WORD_REPORT_PART2_PATH.exists() else WORD_REPORT_PATH
-    if not target_path.exists():
+    """Tải trực tiếp file Báo cáo Đồ án Word (.docx)."""
+    if not WORD_REPORT_PATH.exists():
         raise HTTPException(status_code=404, detail="Báo cáo Word đang được khởi tạo.")
     return FileResponse(
-        target_path,
-        filename="Bao_Cao_Do_An_BioLens_Phan_2_Finetuned_Day_Du.docx",
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    )
-
-
-@router.get("/download-report-v1")
-async def download_word_report_v1():
-    """Tải trực tiếp file Báo cáo Đồ án Bản cũ đã lưu trữ — Phần 1 (Baseline v1, .docx)."""
-    if not WORD_REPORT_PART1_PATH.exists():
-        raise HTTPException(status_code=404, detail="Không tìm thấy báo cáo Phần 1 Baseline.")
-    return FileResponse(
-        WORD_REPORT_PART1_PATH,
-        filename="Bao_Cao_Do_An_BioLens_Phan_1_Baseline.docx",
+        WORD_REPORT_PATH,
+        filename="Bao_Cao_Do_An_BioLens_Vietnam_VLU.docx",
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
 
