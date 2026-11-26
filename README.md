@@ -1,5 +1,13 @@
 # BioLens Vietnam — Nhận diện Thực vật & Nấm Dược liệu Việt Nam (3.570 Loài)
 
+[![Dataset: VietMediSpecies2026](https://img.shields.io/badge/Dataset-VietMediSpecies2026%20(SciDB)-1E5631?style=flat-square)](https://www.scidb.cn/en/detail?dataSetId=d2e66ca3d73540739a39789d9b1cf989#p5)
+[![Species: 3,570](https://img.shields.io/badge/Taxonomy-3,570%20Species%20(GBIF)-2D7A47?style=flat-square)](https://www.gbif.org/)
+[![Images: 310,647](https://img.shields.io/badge/Full%20Dataset-310,647%20Images-1E5631?style=flat-square)](https://www.scidb.cn/en/detail?dataSetId=d2e66ca3d73540739a39789d9b1cf989#p5)
+[![Backbone: BioCLIP 2](https://img.shields.io/badge/Backbone-BioCLIP%202%20(ViT--L%2F14)-0F4C81?style=flat-square)](https://huggingface.co/imageomics/bioclip-2)
+[![Top-1 Accuracy](https://img.shields.io/badge/Top--1%20Accuracy-90.04%25-2E7D32?style=flat-square)](storage/reports/ml_benchmark_results.json)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square)](https://www.python.org/)
+[![PyTorch CUDA FP16](https://img.shields.io/badge/PyTorch-CUDA%20FP16-EE4C2C?style=flat-square)](https://pytorch.org/)
+
 Đồ án học phần **Học máy và Ứng dụng** (Khoa Công nghệ Thông tin, Trường Đại học Văn Lang).  
 Hệ thống nhận diện qua ảnh và tra cứu thông tin thực vật, nấm dược liệu Việt Nam trên bộ dữ liệu **VietMediSpecies2026** (`3.570` loài có ảnh thực tế / `310.647` ảnh thực địa / `4.799` bản ghi chuẩn GBIF).
 
